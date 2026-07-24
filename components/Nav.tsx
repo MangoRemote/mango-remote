@@ -26,7 +26,7 @@ export default function Nav() {
     <nav className="nav">
       <Link href="/" className="nav-logo">
         <span className="nav-logo-mark">M</span>
-        MangoRemote
+        <span className="logo-mango">Mango</span><span className="logo-remote">Remote</span>
       </Link>
 
       <div className="nav-links">

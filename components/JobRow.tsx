@@ -26,11 +26,7 @@ function formatSalary(job: Job): string {
 
 function CompanyInitials({ name }: { name: string }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
-  return (
-    <div className="company-logo">
-      {initials}
-    </div>
-  )
+  return <div className="company-logo">{initials}</div>
 }
 
 export default function JobRow({ job, locked = false }: Props) {
@@ -39,49 +35,44 @@ export default function JobRow({ job, locked = false }: Props) {
   const categoryName = job.category?.name || ''
   const location = job.region_tags?.[0] || ''
 
-  if (locked) {
-    return (
-      <div className="job-row locked" aria-hidden="true">
+  const inner = (
+    <>
+      {job.company?.logo_url ? (
+        <img src={job.company.logo_url} alt={companyName} className="company-logo" />
+      ) : (
         <CompanyInitials name={companyName} />
-        <span className="job-title">{job.title}</span>
-        <span className="job-meta">{companyName} · {location}</span>
-        <div className="job-tags">
-          {categoryName && <span className="tag">{categoryName}</span>}
-          {job.asia_friendly && <span className="tag tag-asia">🌏 Asia-friendly</span>}
+      )}
+
+      <div className="job-card-body">
+        <div className="job-card-top">
+          <span className="job-title">{job.title}</span>
+          {job.is_featured && <span className="featured-badge">Featured</span>}
         </div>
+        <div className="job-card-bottom">
+          <span className="job-company">{companyName}</span>
+          {location && <span className="tag">{location}</span>}
+          {categoryName && <span className="tag tag-category">{categoryName}</span>}
+          {job.asia_friendly && <span className="tag tag-asia">🌏 Asia-friendly</span>}
+          {job.job_type && <span className="tag">{job.job_type}</span>}
+        </div>
+      </div>
+
+      <div className="job-card-right">
         {salary && <span className="salary">{salary}</span>}
         <span className="days-ago">{daysAgo(job.created_at)}</span>
-        <span className="apply-link lock-icon">🔒</span>
+        {!locked && <span className="apply-btn">Apply →</span>}
+        {locked && <span style={{ fontSize: 16 }}>🔒</span>}
       </div>
-    )
+    </>
+  )
+
+  if (locked) {
+    return <div className="job-card locked" aria-hidden="true">{inner}</div>
   }
 
   return (
-    <Link href={`/jobs/${job.slug}`} style={{ display: 'contents' }}>
-      <div className="job-row">
-        {job.company?.logo_url ? (
-          <img src={job.company.logo_url} alt={companyName} className="company-logo" />
-        ) : (
-          <CompanyInitials name={companyName} />
-        )}
-        <span className="job-title">{job.title}</span>
-        <span className="job-meta">{companyName} · {location}</span>
-        <div className="job-tags">
-          {categoryName && <span className="tag">{categoryName}</span>}
-          {job.asia_friendly && <span className="tag tag-asia">🌏 Asia-friendly</span>}
-        </div>
-        {salary && <span className="salary">{salary}</span>}
-        <span className="days-ago">{daysAgo(job.created_at)}</span>
-        <a
-          href={job.apply_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="apply-link"
-          onClick={e => e.stopPropagation()}
-        >
-          Apply →
-        </a>
-      </div>
+    <Link href={`/jobs/${job.slug}`} className="job-card">
+      {inner}
     </Link>
   )
 }
