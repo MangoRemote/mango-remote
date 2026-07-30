@@ -60,7 +60,7 @@ async function getCategoryId(name: string): Promise<string | null> {
 
 async function getOrCreateCompany(name: string, website?: string, logoUrl?: string): Promise<string | null> {
   const slug = slugify(name)
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from('companies')
     .select('id')
     .eq('slug', slug)
