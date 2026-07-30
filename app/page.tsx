@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import JobCard from '@/components/JobRow'
 import PremiumGate from '@/components/PremiumGate'
+import EmailCapture from '@/components/EmailCapture'
 import Link from 'next/link'
 import type { Job } from '@/lib/types'
 
@@ -51,7 +52,7 @@ export default async function HomePage() {
       <div className="hero">
         <h1>Remote jobs that let you<br /><em>live in Asia.</em></h1>
         <p className="hero-sub">
-          Bangkok, Bali, Vietnam — hand-picked roles compatible with GMT+7 &amp; GMT+8.
+          For remote professionals who've chosen Asia. Hand-picked roles from employers who mean it.
         </p>
         <form action="/jobs" method="get" className="hero-search">
           <input
@@ -62,107 +63,65 @@ export default async function HomePage() {
           />
           <button type="submit">Search</button>
         </form>
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <span className="hero-stat-num">{total}</span>
-            <span className="hero-stat-label">Live jobs</span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-num">GMT+7/8</span>
-            <span className="hero-stat-label">Asia-friendly</span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-num">Daily</span>
-            <span className="hero-stat-label">Updated</span>
-          </div>
+        <div className="hero-filters">
+          <select name="category" className="hero-filter-select">
+            <option value="">All Categories</option>
+            <option>Engineering</option>
+            <option>Design</option>
+            <option>Marketing</option>
+            <option>Sales</option>
+            <option>Customer Support</option>
+            <option>Product</option>
+            <option>Finance</option>
+            <option>HR</option>
+            <option>Operations</option>
+          </select>
+          <select name="level" className="hero-filter-select">
+            <option value="">Experience Level</option>
+            <option>Entry Level</option>
+            <option>Mid Level</option>
+            <option>Senior</option>
+            <option>Manager</option>
+          </select>
+          <select name="posted" className="hero-filter-select">
+            <option value="">Any Time</option>
+            <option value="1">Last 24 hours</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+          </select>
+          <select name="type" className="hero-filter-select">
+            <option value="">Job Type</option>
+            <option value="full-time">Full-time</option>
+            <option value="contract">Contract</option>
+            <option value="part-time">Part-time</option>
+          </select>
         </div>
       </div>
 
-      <div className="page-layout">
-        <aside className="sidebar">
-          <div className="sidebar-section">
-            <span className="sidebar-label">Search</span>
-            <form action="/jobs" method="get">
-              <input
-                type="search"
-                name="q"
-                className="sidebar-search"
-                placeholder="Title, keyword..."
-              />
-            </form>
-          </div>
 
-          <div className="sidebar-section">
-            <span className="sidebar-label">Category</span>
-            <div className="sidebar-options">
-              {CATEGORIES.map(cat => (
-                <Link
-                  key={cat}
-                  href={cat === 'All Jobs' ? '/jobs' : `/jobs?category=${encodeURIComponent(cat)}`}
-                  className="sidebar-option"
-                >
-                  {cat}
-                </Link>
-              ))}
-            </div>
-          </div>
+      <main className="main-content">
+        <div className="jobs-header">
+          <h2 className="jobs-heading">Remote Jobs <span className="jobs-count">{total} jobs</span></h2>
+          <select className="jobs-sort">
+            <option>Most recent</option>
+            <option>Featured first</option>
+          </select>
+        </div>
 
-          <div className="sidebar-section">
-            <span className="sidebar-label">Region</span>
-            <div className="sidebar-options">
-              <Link href="/jobs" className="sidebar-option">All Regions</Link>
-              <Link href="/jobs?region=asia" className="sidebar-option">🌏 Asia-friendly</Link>
-              <Link href="/jobs?region=worldwide" className="sidebar-option">Worldwide</Link>
-            </div>
-          </div>
+        {freeJobs.map(job => (
+          <JobCard key={job.id} job={job} />
+        ))}
 
-          <div className="sidebar-section">
-            <span className="sidebar-label">Type</span>
-            <div className="sidebar-options">
-              <Link href="/jobs" className="sidebar-option">All Types</Link>
-              <Link href="/jobs?type=full-time" className="sidebar-option">Full-time</Link>
-              <Link href="/jobs?type=contract" className="sidebar-option">Contract</Link>
-              <Link href="/jobs?type=part-time" className="sidebar-option">Part-time</Link>
-            </div>
-          </div>
-        </aside>
+        {premiumJobs.length > 0 && !isPremium && (
+          <PremiumGate count={premiumJobs.length} />
+        )}
 
-        <main className="main-content">
-          <div className="jobs-header">
-            <span className="jobs-count"><strong>{total}</strong> remote jobs</span>
-            <select className="jobs-sort">
-              <option>Most recent</option>
-              <option>Featured first</option>
-            </select>
-          </div>
+        {premiumJobs.length > 0 && isPremium && premiumJobs.map(job => (
+          <JobCard key={job.id} job={job} />
+        ))}
 
-          {freeJobs.map(job => (
-            <JobCard key={job.id} job={job} />
-          ))}
-
-          {premiumJobs.length > 0 && !isPremium && (
-            <>
-              <PremiumGate count={premiumJobs.length} />
-              {premiumJobs.map(job => (
-                <JobCard key={job.id} job={job} locked />
-              ))}
-            </>
-          )}
-
-          {premiumJobs.length > 0 && isPremium && premiumJobs.map(job => (
-            <JobCard key={job.id} job={job} />
-          ))}
-
-          <div className="email-capture">
-            <h3>New Asia-friendly jobs, weekly.</h3>
-            <p>Get the latest remote roles that work across GMT+7 and GMT+8 delivered to your inbox.</p>
-            <form className="email-form" action="/api/subscribe" method="post">
-              <input type="email" name="email" placeholder="your@email.com" required />
-              <button type="submit">Subscribe free</button>
-            </form>
-          </div>
-        </main>
-      </div>
+        <EmailCapture />
+      </main>
     </>
   )
 }

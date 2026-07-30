@@ -27,23 +27,56 @@ export async function POST(request: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    const userId = session.metadata?.user_id
-    const jobData = session.metadata?.job_data
+    const email = session.customer_details?.email
+    const plan = session.metadata?.plan || 'monthly'
 
-    if (session.mode === 'subscription' && userId) {
+    if (session.mode === 'subscription' && email) {
       const subId = session.subscription as string
       const sub = await stripe.subscriptions.retrieve(subId)
       const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end
-      await supabase.from('subscriptions').upsert({
-        user_id: userId,
-        stripe_customer_id: session.customer as string,
-        stripe_subscription_id: subId,
-        plan: 'premium',
-        status: 'active',
-        current_period_end: new Date(periodEnd * 1000).toISOString(),
-      }, { onConflict: 'stripe_subscription_id' })
+
+      // Find or create the Supabase user
+      const { data: existingUsers } = await supabase.auth.admin.listUsers()
+      let userId: string | null = null
+      const existing = existingUsers?.users?.find(u => u.email === email)
+
+      if (existing) {
+        userId = existing.id
+      } else {
+        // Create account and send invite email so they can set a password
+        const { data: newUser } = await supabase.auth.admin.createUser({
+          email,
+          email_confirm: true,
+        })
+        if (newUser?.user) {
+          userId = newUser.user.id
+          // Send password setup link
+          await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email,
+            options: {
+              redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/set-password`,
+            },
+          })
+        }
+      }
+
+      if (userId) {
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          stripe_customer_id: session.customer as string,
+          stripe_subscription_id: subId,
+          plan: 'premium',
+          billing_interval: plan,
+          status: 'active',
+          current_period_end: new Date(periodEnd * 1000).toISOString(),
+        }, { onConflict: 'user_id' })
+      }
     }
 
+    // Job posting payment
+    const userId = session.metadata?.user_id
+    const jobData = session.metadata?.job_data
     if (session.mode === 'payment' && userId && jobData) {
       const data = JSON.parse(jobData)
       const { data: company } = await supabase

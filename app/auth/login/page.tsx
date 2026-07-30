@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -11,55 +10,58 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     const supabase = createClient()
-
-    if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
-      setError('Check your email to confirm your account.')
-      setLoading(false)
-      return
-    }
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { setError(error.message); setLoading(false); return }
-    router.push('/')
+    if (error) { setError('Incorrect email or password. Premium members only.'); setLoading(false); return }
+    router.push('/account')
     router.refresh()
   }
 
   return (
-    <div className="auth-page">
-      <h1>{mode === 'login' ? 'Sign in' : 'Create account'}</h1>
-      <p>{mode === 'login' ? 'Access your MangoRemote account.' : 'Start finding Asia-friendly remote jobs.'}</p>
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email</label>
-          <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} required />
+    <div className="auth-layout">
+      <div className="auth-form-wrap">
+        <div className="auth-form-header">
+          <h1>Sign in</h1>
+          <p>MangoRemote is for Premium members. <a href="/premium" style={{color:'var(--accent)', fontWeight:500}}>Not a member yet?</a></p>
         </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
-        </div>
-        {error && <p className="form-error">{error}</p>}
-        <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: 8, padding: '10px 0', textAlign: 'center' }} disabled={loading}>
-          {loading ? 'Loading...' : mode === 'login' ? 'Sign in' : 'Create account'}
-        </button>
-      </form>
-
-      <p style={{ marginTop: 20, fontSize: 13.5, color: 'var(--muted)', textAlign: 'center' }}>
-        {mode === 'login' ? (
-          <>No account? <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontWeight: 500, fontSize: 13.5 }}>Sign up</button></>
-        ) : (
-          <>Have an account? <button onClick={() => setMode('login')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontWeight: 500, fontSize: 13.5 }}>Sign in</button></>
-        )}
-      </p>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="email">Email address</label>
+            <input
+              id="email"
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && <div className="form-error">{error}</div>}
+          <button type="submit" className="btn-primary auth-submit" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
+        <p style={{marginTop:16, fontSize:13, color:'var(--muted)', textAlign:'center'}}>
+          Forgot your password? <a href="mailto:hello@mangoremote.com" style={{color:'var(--accent)'}}>Email us</a>
+        </p>
+      </div>
     </div>
   )
 }

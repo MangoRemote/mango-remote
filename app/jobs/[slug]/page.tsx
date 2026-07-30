@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import JobRow from '@/components/JobRow'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import type { Job } from '@/lib/types'
 import type { Metadata } from 'next'
 
@@ -61,74 +62,105 @@ export default async function JobPage({ params }: Props) {
   }
 
   const salary = formatSalary()
+  const regions = (j.region_tags || []).filter(r => r && r !== 'Remote Worldwide' && r !== 'Remote Asia')
 
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px' }}>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+    <main className="job-detail-page">
+
+      {/* Breadcrumb */}
+      <div className="job-detail-breadcrumb">
+        <Link href="/">Remote Jobs</Link>
+        <span>›</span>
+        {category && <Link href={`/?category=${encodeURIComponent(category.name)}`}>{category.name}</Link>}
+        {category && <span>›</span>}
+        <span>{j.title}</span>
+      </div>
+
+      {/* Header card */}
+      <div className="job-detail-header">
+        <div className="job-detail-company-row">
           {company?.logo_url ? (
-            <img src={company.logo_url} alt={company.name} style={{ width: 48, height: 48, borderRadius: 8, border: '1px solid var(--border)', objectFit: 'contain' }} />
+            <img src={company.logo_url} alt={company.name} className="job-detail-logo" />
           ) : (
-            <div style={{ width: 48, height: 48, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--tag-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16 }}>
+            <div className="job-detail-logo-placeholder">
               {company?.name?.slice(0, 2).toUpperCase()}
             </div>
           )}
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15 }}>{company?.name}</div>
+            <div className="job-detail-company-name">{company?.name}</div>
             {company?.website && (
-              <a href={company.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+              <a href={company.website} target="_blank" rel="noopener noreferrer" className="job-detail-company-url">
                 {company.website.replace(/^https?:\/\//, '')}
               </a>
             )}
           </div>
         </div>
 
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 24, fontWeight: 800, letterSpacing: '-0.4px', marginBottom: 12, lineHeight: 1.2 }}>
-          {j.title}
-        </h1>
+        <h1 className="job-detail-title">{j.title}</h1>
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-          {category && <span className="tag">{category.name}</span>}
-          <span className="tag" style={{ textTransform: 'capitalize' }}>{j.employment_type}</span>
-          {j.region_tags?.map(r => <span key={r} className="tag">{r}</span>)}
-          {j.asia_friendly && <span className="tag tag-asia">🌏 Asia-friendly</span>}
-          {salary && <span className="tag" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5 }}>{salary}</span>}
+        {/* Quick facts */}
+        <div className="job-detail-facts">
+          {category && (
+            <div className="job-detail-fact">
+              <span className="job-detail-fact-label">Category</span>
+              <span className="job-detail-fact-value">{category.name}</span>
+            </div>
+          )}
+          <div className="job-detail-fact">
+            <span className="job-detail-fact-label">Type</span>
+            <span className="job-detail-fact-value" style={{ textTransform: 'capitalize' }}>{j.employment_type}</span>
+          </div>
+          {regions.length > 0 && (
+            <div className="job-detail-fact">
+              <span className="job-detail-fact-label">Location</span>
+              <span className="job-detail-fact-value">{regions.join(', ')}</span>
+            </div>
+          )}
+          {salary && (
+            <div className="job-detail-fact">
+              <span className="job-detail-fact-label">Salary</span>
+              <span className="job-detail-fact-value salary-inline">{salary}</span>
+            </div>
+          )}
         </div>
 
+        {/* Apply CTA */}
         <a
           href={j.apply_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-primary"
-          style={{ display: 'inline-block', fontSize: 14 }}
+          className="job-detail-apply-btn"
         >
           Apply for this role →
         </a>
+        <p className="job-detail-apply-note">You'll be taken to {company?.name}'s careers page</p>
       </div>
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 28, marginBottom: 48 }}>
-        <div style={{ fontSize: 14, lineHeight: 1.75, color: 'var(--text)', whiteSpace: 'pre-wrap' }}>
+      {/* Description */}
+      <div className="job-detail-body">
+        <h2 className="job-detail-section-title">About the role</h2>
+        <div className="job-detail-description">
           {j.description}
         </div>
       </div>
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 28, marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
+      {/* Apply CTA bottom */}
+      <div className="job-detail-apply-bottom">
         <a
           href={j.apply_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-primary"
-          style={{ display: 'inline-block', fontSize: 14 }}
+          className="job-detail-apply-btn"
         >
           Apply for this role →
         </a>
+        <p className="job-detail-apply-note">You'll be taken to {company?.name}'s careers page</p>
       </div>
 
+      {/* Related jobs */}
       {related && related.length > 0 && (
-        <div style={{ marginTop: 48 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
-            More {category?.name} roles
-          </div>
+        <div className="job-detail-related">
+          <div className="job-detail-related-heading">More {category?.name} roles</div>
           {related.map(r => <JobRow key={r.id} job={r as Job} />)}
         </div>
       )}

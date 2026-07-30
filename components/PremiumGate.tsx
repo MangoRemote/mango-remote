@@ -8,11 +8,13 @@ export default function PremiumGate({ count }: Props) {
   return (
     <div className="premium-gate">
       <div className="premium-gate-inner">
-        <span style={{ fontSize: 28 }}>🌏</span>
-        <h3>{count} more jobs for Premium members</h3>
-        <p>Unlock every role, apply early, and get weekly Asia-friendly job alerts straight to your inbox.</p>
-        <Link href="/premium" className="btn-primary" style={{ fontSize: 13.5, padding: '10px 24px' }}>
-          Go Premium — £9.99/month
+        <div className="premium-gate-lock">🔒</div>
+        <div className="premium-gate-text">
+          <strong>Unlock {count} more jobs that match your search</strong>
+          <p>Premium members see the full board. Upgrade to access every role.</p>
+        </div>
+        <Link href="/premium" className="premium-gate-btn">
+          Unlock all jobs →
         </Link>
       </div>
     </div>

@@ -24,43 +24,69 @@ function formatSalary(job: Job): string {
   return ''
 }
 
-function CompanyInitials({ name }: { name: string }) {
+const CATEGORY_COLOURS: Record<string, string> = {
+  'Engineering':        '#3B82F6',
+  'Design':             '#8B5CF6',
+  'Marketing':          '#EC4899',
+  'Sales':              '#10B981',
+  'Customer Support':   '#F59E0B',
+  'Product':            '#6366F1',
+  'Finance':            '#14B8A6',
+  'HR':                 '#F97316',
+  'Operations':         '#64748B',
+  'Healthcare':         '#EF4444',
+  'Data':               '#0EA5E9',
+  'Legal':              '#A855F7',
+}
+
+function categoryColour(name: string): string {
+  return CATEGORY_COLOURS[name] || '#F26419'
+}
+
+const AVATAR_COLOURS = [
+  '#3B82F6','#8B5CF6','#EC4899','#10B981',
+  '#F59E0B','#6366F1','#14B8A6','#EF4444',
+  '#F97316','#64748B','#0EA5E9','#A855F7',
+]
+
+function CompanyAvatar({ name }: { name: string }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
-  return <div className="company-logo">{initials}</div>
+  const colour = AVATAR_COLOURS[name.charCodeAt(0) % AVATAR_COLOURS.length]
+  return <div className="company-avatar" style={{ background: colour, color: '#fff', borderColor: 'transparent' }}>{initials}</div>
 }
 
 export default function JobRow({ job, locked = false }: Props) {
   const salary = formatSalary(job)
   const companyName = job.company?.name || 'Unknown'
   const categoryName = job.category?.name || ''
-  const location = job.region_tags?.[0] || ''
+  const regionTags = (job.region_tags || []).filter(r => r && r !== 'Remote Worldwide' && r !== 'Remote Asia')
 
   const inner = (
     <>
-      {job.company?.logo_url ? (
-        <img src={job.company.logo_url} alt={companyName} className="company-logo" />
-      ) : (
-        <CompanyInitials name={companyName} />
+      {job.company?.logo_url && (
+        <img src={job.company.logo_url} alt={companyName} className="company-avatar-img" />
       )}
 
       <div className="job-card-body">
         <div className="job-card-top">
           <span className="job-title">{job.title}</span>
-          {job.is_featured && <span className="featured-badge">Featured</span>}
+        </div>
+        <div className="job-card-meta">
+          <span className="job-company">{companyName}</span>
+          {salary && <span className="salary-inline">{salary}</span>}
         </div>
         <div className="job-card-bottom">
-          <span className="job-company">{companyName}</span>
-          {location && <span className="tag">{location}</span>}
-          {categoryName && <span className="tag tag-category">{categoryName}</span>}
-          {job.asia_friendly && <span className="tag tag-asia">🌏 Asia-friendly</span>}
-          {job.job_type && <span className="tag">{job.job_type}</span>}
+          {regionTags.map(r => <span key={r} className="tag">📍 {r}</span>)}
         </div>
       </div>
 
       <div className="job-card-right">
-        {salary && <span className="salary">{salary}</span>}
-        <span className="days-ago">{daysAgo(job.created_at)}</span>
-        {!locked && <span className="apply-btn">Apply →</span>}
+        {categoryName && (
+          <span className="category-badge" style={{ background: categoryColour(categoryName) }}>{categoryName}</span>
+        )}
+        {job.is_featured && <span className="featured-label">★ Featured</span>}
+        {!job.is_featured && <span className="days-ago">{daysAgo(job.created_at)}</span>}
+        {job.is_featured && <span className="days-ago">{daysAgo(job.created_at)}</span>}
         {locked && <span style={{ fontSize: 16 }}>🔒</span>}
       </div>
     </>
@@ -71,7 +97,7 @@ export default function JobRow({ job, locked = false }: Props) {
   }
 
   return (
-    <Link href={`/jobs/${job.slug}`} className="job-card">
+    <Link href={`/jobs/${job.slug}`} className={`job-card${job.is_featured ? ' featured' : ''}`}>
       {inner}
     </Link>
   )

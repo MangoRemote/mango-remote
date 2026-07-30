@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Premium — MangoRemote',
-  description: 'Get full access to all remote jobs on MangoRemote. £9.99/month.',
+  description: 'Unlock every remote job on MangoRemote. Full access from $6.99/month.',
 }
 
 export default async function PremiumPage() {
@@ -21,38 +22,120 @@ export default async function PremiumPage() {
   }
 
   return (
-    <div className="premium-page">
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-        MangoRemote Premium
-      </div>
-      <h1>Full access to every remote job that lets you live in Asia.</h1>
+    <div className="premium-page-v2">
 
-      <div className="price">£9.99</div>
-      <div className="price-sub">per month, cancel any time</div>
+      {/* Dark hero */}
+      <div className="premium-hero">
+        <span className="premium-eyebrow">MangoRemote Premium</span>
+        <h1>Find your remote job in Asia faster.</h1>
+        <p>Premium members access the full job board, get new roles delivered weekly, and apply before free members even see the listing.</p>
 
-      <ul className="perks-list">
-        <li>Access to all jobs on MangoRemote — free members see 50%</li>
-        <li>Every 🌏 Asia-friendly role tagged with timezone compatibility</li>
-        <li>New jobs added every week, curated for GMT+7 and GMT+8 workers</li>
-        <li>Early access to newly posted roles before free members</li>
-        <li>Support an independent job board built by a Bangkok expat</li>
-      </ul>
-
-      {isPremium ? (
-        <div style={{ padding: '14px 0', fontSize: 14, color: 'var(--green)', fontWeight: 600 }}>
-          ✓ You&apos;re already a Premium member. Enjoy full access.
+        <div className="premium-stats">
+          <div className="premium-stat">
+            <strong>100+</strong>
+            <span>Curated jobs</span>
+          </div>
+          <div className="premium-stat-divider" />
+          <div className="premium-stat">
+            <strong>Weekly</strong>
+            <span>New listings</span>
+          </div>
+          <div className="premium-stat-divider" />
+          <div className="premium-stat">
+            <strong>Asia-first</strong>
+            <span>Every single role</span>
+          </div>
         </div>
-      ) : (
-        <form action="/api/checkout/premium" method="post">
-          <button type="submit" className="btn-primary" style={{ padding: '12px 32px', fontSize: 15 }}>
-            Unlock Premium — £9.99/month
-          </button>
-        </form>
-      )}
+      </div>
 
-      <p style={{ marginTop: 20, fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.6 }}>
-        Secure payment via Stripe. Cancel any time from your account settings.
-      </p>
+      {/* Pricing */}
+      <div className="premium-pricing-wrap">
+        {isPremium ? (
+          <div className="premium-already">
+            ✓ You&apos;re already a Premium member. <Link href="/account">View your account →</Link>
+          </div>
+        ) : (
+          <div className="premium-plans">
+            <div className="premium-plan">
+              <div className="premium-plan-name">Monthly</div>
+              <div className="premium-plan-price">$12.99<span>/mo</span></div>
+              <div className="premium-plan-note">Billed monthly · Full flexibility</div>
+              <CheckoutButton plan="monthly" isLoggedIn={!!user} />
+              <div className="premium-plan-cancel">Cancel anytime</div>
+            </div>
+
+            <div className="premium-plan premium-plan-popular">
+              <div className="premium-plan-badge">★ Most popular</div>
+              <div className="premium-plan-name">Quarterly</div>
+              <div className="premium-plan-price">$9.99<span>/mo</span></div>
+              <div className="premium-plan-note">$29.99 billed every 3 months · <strong style={{color:'#16a34a'}}>Save 23%</strong></div>
+              <CheckoutButton plan="quarterly" isLoggedIn={!!user} />
+              <div className="premium-plan-cancel">Cancel anytime</div>
+            </div>
+
+            <div className="premium-plan">
+              <div className="premium-plan-name">Annual</div>
+              <div className="premium-plan-price">$6.99<span>/mo</span></div>
+              <div className="premium-plan-note">$83.88 billed yearly · <strong style={{color:'#16a34a'}}>Save 46%</strong></div>
+              <CheckoutButton plan="annual" isLoggedIn={!!user} />
+              <div className="premium-plan-cancel">Cancel anytime</div>
+            </div>
+          </div>
+        )}
+        <p className="premium-stripe-note">🔒 Secure payment via Stripe. Cancel or pause anytime.</p>
+      </div>
+
+      {/* Why section */}
+      <div className="premium-why">
+        <div className="premium-why-inner">
+          <span className="premium-eyebrow" style={{color: 'var(--accent)'}}>Why go Premium?</span>
+          <h2>Stop scrolling. Start applying.</h2>
+          <p>Free job boards are full of noise — scraped listings, outdated posts, and roles that don&apos;t work from Asia. MangoRemote Premium is different.</p>
+          <div className="premium-benefits">
+            <div className="premium-benefit">
+              <div className="premium-benefit-num">01</div>
+              <strong>See jobs others miss</strong>
+              <p>Premium members access the full board. Free members only see half the listings.</p>
+            </div>
+            <div className="premium-benefit">
+              <div className="premium-benefit-num">02</div>
+              <strong>Apply first, get hired faster</strong>
+              <p>Early access puts you in the first wave of applicants — before the competition arrives.</p>
+            </div>
+            <div className="premium-benefit">
+              <div className="premium-benefit-num">03</div>
+              <strong>Jobs delivered to you</strong>
+              <p>A weekly digest of new Asia-compatible roles, straight to your inbox. No searching required.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Review */}
+      <div className="premium-review-section">
+        <div className="premium-review-label">Success story</div>
+        <div className="premium-featured-review">
+          <div className="premium-review-stars">★★★★★</div>
+          <p>&quot;Send us your reviews and we&apos;ll feature them here.&quot;</p>
+          <span>— Your name here · Job title</span>
+        </div>
+      </div>
+
     </div>
+  )
+}
+
+function CheckoutButton({ plan, isLoggedIn }: { plan: string; isLoggedIn: boolean }) {
+  if (!isLoggedIn) {
+    return (
+      <Link href={`/auth/login?next=/premium`} className="premium-plan-btn" style={{display:'block',textAlign:'center',textDecoration:'none'}}>
+        Get started
+      </Link>
+    )
+  }
+  return (
+    <form action={`/api/checkout/premium?plan=${plan}`} method="post">
+      <button type="submit" className="premium-plan-btn">Subscribe now</button>
+    </form>
   )
 }

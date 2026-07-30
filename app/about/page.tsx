@@ -1,50 +1,70 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About — MangoRemote',
-  description: 'MangoRemote is built by Sidney George, a British expat living in Bangkok.',
+  description: 'MangoRemote is built by Sidney George, a British expat living in Asia.',
 }
 
 export default function AboutPage() {
   return (
-    <div style={{ maxWidth: 580, margin: '0 auto', padding: '48px 24px' }}>
-      <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 26, fontWeight: 800, letterSpacing: '-0.4px', marginBottom: 20 }}>
-        About MangoRemote
-      </h1>
-
-      <div style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <main className="about-page">
+      <div className="about-hero">
+        <span className="about-eyebrow">Our story</span>
+        <h1>Built by someone who made the move.</h1>
         <p>
-          MangoRemote is a remote job board built specifically for people who want to live in Asia.
-        </p>
-        <p>
-          It was built by <strong>Sidney George</strong>, a British expat who has lived in Bangkok for four years. After spending years manually searching job boards for roles that actually work across GMT+7 and GMT+8 timezones, Sidney built the site he wished existed.
-        </p>
-        <p>
-          Every job on MangoRemote is checked for timezone compatibility and tagged with a 🌏 Asia-friendly label when the role genuinely works for someone based in Southeast Asia. No other job board does this.
-        </p>
-        <p>
-          The name? Bangkok is never far from a fresh mango smoothie.
+          MangoRemote exists because finding remote jobs that actually work from Asia is harder than it should be.
         </p>
       </div>
 
-      <div style={{ marginTop: 36, display: 'flex', gap: 16 }}>
-        <a
-          href="https://instagram.com/sidneyygeorge"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-ghost"
-        >
-          Instagram @sidneyygeorge
-        </a>
-        <a
-          href="https://tiktok.com/@sidneyygeorge"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-ghost"
-        >
-          TikTok @sidneyygeorge
-        </a>
+      <div className="about-body">
+        <div className="about-text">
+          <p>
+            I'm <strong>Sidney George</strong> — a British expat who packed up and moved to Asia a few years ago. Best decision I ever made.
+          </p>
+          <p>
+            But finding remote work that fits life here? That was a grind. Most job boards don't tell you whether a company actually supports async work, whether they care what timezone you're in, or whether "remote" really means "remote from our HQ only."
+          </p>
+          <p>
+            So I built MangoRemote. Every job is hand-picked. Every listing is checked to make sure it genuinely works for someone based in Southeast or East Asia — whether that's Bangkok, Bali, Chiang Mai, Ho Chi Minh City, or anywhere else you've chosen to be.
+          </p>
+          <p>
+            This isn't a scraped job board. It's curated. And it's built by someone living the same life you're trying to live.
+          </p>
+          <p className="about-sign">
+            — Sidney George, Founder
+          </p>
+        </div>
+
+        <div className="about-facts">
+          <div className="about-fact">
+            <span className="about-fact-emoji">🥭</span>
+            <div>
+              <strong>Why "Mango"?</strong>
+              <p>Bangkok is never far from a fresh mango smoothie. It felt right.</p>
+            </div>
+          </div>
+          <div className="about-fact">
+            <span className="about-fact-emoji">🌏</span>
+            <div>
+              <strong>Asia-first, always</strong>
+              <p>Every role is vetted for timezone compatibility. No surprises.</p>
+            </div>
+          </div>
+          <div className="about-fact">
+            <span className="about-fact-emoji">✉️</span>
+            <div>
+              <strong>Get in touch</strong>
+              <p>Want to list a job or just say hi? <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a></p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <div className="about-cta">
+        <Link href="/" className="btn-primary" style={{ fontSize: 15, padding: '12px 28px' }}>Browse remote jobs →</Link>
+        <Link href="/post-a-job" className="btn-ghost" style={{ fontSize: 15, padding: '12px 28px' }}>Post a job</Link>
+      </div>
+    </main>
   )
 }
