@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -50,7 +50,7 @@ function getRegionTags(location: string): string[] {
 }
 
 async function getCategoryId(name: string): Promise<string | null> {
-  const { data } = await supabase
+  const { data } = await getSupabase()
     .from('categories')
     .select('id')
     .ilike('name', name)
@@ -67,7 +67,7 @@ async function getOrCreateCompany(name: string, website?: string, logoUrl?: stri
     .single()
   if (existing) return existing.id
 
-  const { data } = await supabase
+  const { data } = await getSupabase()
     .from('companies')
     .insert({ name, slug, website: website || null, logo_url: logoUrl || null, verified: false })
     .select('id')
@@ -76,7 +76,7 @@ async function getOrCreateCompany(name: string, website?: string, logoUrl?: stri
 }
 
 async function jobExists(applyUrl: string): Promise<boolean> {
-  const { data } = await supabase
+  const { data } = await getSupabase()
     .from('jobs')
     .select('id')
     .eq('apply_url', applyUrl)
@@ -101,7 +101,7 @@ async function fetchRemotive(): Promise<number> {
 
     const regionTags = getRegionTags(job.candidate_required_location || 'Worldwide')
 
-    await supabase.from('jobs').insert({
+    await getSupabase().from('jobs').insert({
       title: job.title,
       slug: uniqueSlug(job.title),
       company_id: companyId,
@@ -162,7 +162,7 @@ async function fetchRemoteOK(): Promise<number> {
     const location = [job.location, ...(job.tags || [])].join(' ')
     const regionTags = getRegionTags(location)
 
-    await supabase.from('jobs').insert({
+    await getSupabase().from('jobs').insert({
       title: job.position,
       slug: uniqueSlug(job.position),
       company_id: companyId,

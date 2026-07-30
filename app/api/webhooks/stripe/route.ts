@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const getStripe = () => new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-const supabase = createClient(
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
@@ -32,11 +32,11 @@ export async function POST(request: Request) {
 
     if (session.mode === 'subscription' && email) {
       const subId = session.subscription as string
-      const sub = await stripe.subscriptions.retrieve(subId)
+      const sub = await getStripe().subscriptions.retrieve(subId)
       const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end
 
       // Find or create the Supabase user
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
+      const { data: existingUsers } = await getSupabase().auth.admin.listUsers()
       let userId: string | null = null
       const existing = existingUsers?.users?.find(u => u.email === email)
 
@@ -44,14 +44,14 @@ export async function POST(request: Request) {
         userId = existing.id
       } else {
         // Create account and send invite email so they can set a password
-        const { data: newUser } = await supabase.auth.admin.createUser({
+        const { data: newUser } = await getSupabase().auth.admin.createUser({
           email,
           email_confirm: true,
         })
         if (newUser?.user) {
           userId = newUser.user.id
           // Send password setup link
-          await supabase.auth.admin.generateLink({
+          await getSupabase().auth.admin.generateLink({
             type: 'recovery',
             email,
             options: {
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       }
 
       if (userId) {
-        await supabase.from('subscriptions').upsert({
+        await getSupabase().from('subscriptions').upsert({
           user_id: userId,
           stripe_customer_id: session.customer as string,
           stripe_subscription_id: subId,
@@ -86,8 +86,8 @@ export async function POST(request: Request) {
         .single()
 
       if (company) {
-        const { data: cat } = await supabase.from('categories').select('id').ilike('name', data.category).single()
-        const { data: job } = await supabase.from('jobs').insert({
+        const { data: cat } = await getSupabase().from('categories').select('id').ilike('name', data.category).single()
+        const { data: job } = await getSupabase().from('jobs').insert({
           title: data.title,
           slug: slugify(data.title),
           company_id: company.id,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
         }).select().single()
 
         if (job) {
-          await supabase.from('employer_postings').insert({
+          await getSupabase().from('employer_postings').insert({
             user_id: userId,
             job_id: job.id,
             payment_status: 'paid',
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
   if (event.type === 'customer.subscription.updated') {
     const sub = event.data.object as Stripe.Subscription
     const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end
-    await supabase.from('subscriptions')
+    await getSupabase().from('subscriptions')
       .update({
         status: sub.status === 'active' ? 'active' : sub.status === 'past_due' ? 'past_due' : 'canceled',
         current_period_end: new Date(periodEnd * 1000).toISOString(),
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
 
   if (event.type === 'customer.subscription.deleted') {
     const sub = event.data.object as Stripe.Subscription
-    await supabase.from('subscriptions')
+    await getSupabase().from('subscriptions')
       .update({ status: 'canceled', plan: 'free' })
       .eq('stripe_subscription_id', sub.id)
   }
