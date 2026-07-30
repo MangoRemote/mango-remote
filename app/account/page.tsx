@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import type { User } from '@supabase/supabase-js'
 
 export const metadata: Metadata = {
   title: 'My Account — MangoRemote',
@@ -13,7 +14,7 @@ const PREVIEW_USER = { email: 'sarah@example.com', created_at: '2026-01-15T00:00
 const PREVIEW_SUB = { plan: 'premium', status: 'active', current_period_end: '2026-08-29T00:00:00Z' }
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ upgraded?: string }> }) {
-  let user: { email: string; created_at: string; id: string } | null = null
+  let user: User | { email: string; created_at: string; id: string } | null = null
   let sub: { plan: string; status: string; current_period_end: string } | null = null
 
   if (PREVIEW_MODE) {
@@ -23,11 +24,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     const supabase = await createClient()
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) redirect('/auth/login')
-    user = authUser as typeof user
+    user = authUser
     const { data } = await supabase
       .from('subscriptions')
       .select('plan, status, current_period_end')
-      .eq('user_id', authUser!.id)
+      .eq('user_id', authUser.id)
       .single()
     sub = data
   }
