@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     const jobData = session.metadata?.job_data
     if (session.mode === 'payment' && userId && jobData) {
       const data = JSON.parse(jobData)
-      const { data: company } = await supabase
+      const { data: company } = await getSupabase()
         .from('companies')
         .insert({ name: data.company_name, slug: slugify(data.company_name), logo_url: data.logo_url || null, verified: false })
         .select()
