@@ -39,13 +39,18 @@ function uniqueSlug(base: string) {
   return slugify(base) + '-' + Math.random().toString(36).slice(2, 6)
 }
 
-// Region tags based on job location field
-function getRegionTags(location: string): string[] {
+// Returns null if job is NOT asia/worldwide compatible — skip these
+function getRegionTags(location: string): string[] | null {
   const l = location.toLowerCase()
-  if (l.includes('asia') || l.includes('apac')) return ['APAC']
-  if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global')) return ['Worldwide']
-  if (l.includes('europe')) return ['Europe']
-  if (l.includes('usa') || l.includes('us only') || l.includes('united states')) return ['USA only']
+  // Explicitly Asia/APAC friendly
+  if (l.includes('asia') || l.includes('apac') || l.includes('thailand') || l.includes('southeast asia')) return ['APAC']
+  // Worldwide / anywhere is fine
+  if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global') || l.includes('remote') || l === '') return ['Worldwide']
+  // Europe only is ok — many overlap with Asia timezones
+  if (l.includes('europe') && !l.includes('only')) return ['Europe']
+  // These are restricted regions — skip the job
+  if (l.includes('usa') || l.includes('us only') || l.includes('united states') || l.includes('canada only') || l.includes('uk only') || l.includes('australia only')) return null
+  // Default — assume worldwide
   return ['Worldwide']
 }
 
@@ -99,7 +104,8 @@ async function fetchRemotive(): Promise<number> {
     const companyId = await getOrCreateCompany(job.company_name, job.company_url, job.company_logo)
     if (!companyId) continue
 
-    const regionTags = getRegionTags(job.candidate_required_location || 'Worldwide')
+    const regionTags = getRegionTags(job.candidate_required_location || '')
+    if (!regionTags) continue
 
     await getSupabase().from('jobs').insert({
       title: job.title,
@@ -113,8 +119,9 @@ async function fetchRemotive(): Promise<number> {
       salary_currency: 'USD',
       is_premium: true,
       is_featured: false,
-      status: 'live',
+      status: 'pending',
       source: 'remotive',
+
       asia_friendly: true,
       published_at: job.publication_date || new Date().toISOString(),
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -161,6 +168,7 @@ async function fetchRemoteOK(): Promise<number> {
 
     const location = [job.location, ...(job.tags || [])].join(' ')
     const regionTags = getRegionTags(location)
+    if (!regionTags) continue
 
     await getSupabase().from('jobs').insert({
       title: job.position,
@@ -176,10 +184,66 @@ async function fetchRemoteOK(): Promise<number> {
       salary_currency: 'USD',
       is_premium: true,
       is_featured: false,
-      status: 'live',
+      status: 'pending',
       source: 'remoteok',
       asia_friendly: true,
       published_at: job.date || new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    count++
+  }
+  return count
+}
+
+// ── Working Nomads ───────────────────────────────────────────────────────────
+async function fetchWorkingNomads(): Promise<number> {
+  // Fetch worldwide and APAC jobs separately
+  const [resWorldwide, resApac] = await Promise.all([
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=100&location=worldwide'),
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=100&location=apac'),
+  ])
+
+  const worldwide = resWorldwide.ok ? await resWorldwide.json() : []
+  const apac = resApac.ok ? await resApac.json() : []
+
+  // Merge and deduplicate by url
+  const seen = new Set<string>()
+  const allJobs = [...worldwide, ...apac].filter((j: {url: string}) => {
+    if (seen.has(j.url)) return false
+    seen.add(j.url)
+    return true
+  })
+
+  let count = 0
+
+  for (const job of allJobs) {
+    if (!job.url || !job.company_name || !job.title) continue
+    if (await jobExists(job.url)) continue
+
+    const categoryName = CATEGORY_MAP[job.category?.toLowerCase().replace(/\s+/g, '-')] || 'Operations'
+    const categoryId = await getCategoryId(categoryName)
+    const companyId = await getOrCreateCompany(job.company_name, job.company_url || undefined, job.company_logo || undefined)
+    if (!companyId) continue
+
+    const regionTags = getRegionTags(job.location || '')
+    if (!regionTags) continue
+
+    await getSupabase().from('jobs').insert({
+      title: job.title,
+      slug: uniqueSlug(job.title),
+      company_id: companyId,
+      description: job.description || '',
+      apply_url: job.url,
+      category_id: categoryId,
+      employment_type: 'full-time',
+      region_tags: regionTags,
+      salary_currency: 'USD',
+      is_premium: true,
+      is_featured: false,
+      status: 'pending',
+      source: 'workingnomads',
+      asia_friendly: true,
+      published_at: job.pub_date || new Date().toISOString(),
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
     count++
@@ -195,11 +259,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [remotive, remoteok] = await Promise.all([
+    const [remotive, remoteok, workingnomads] = await Promise.all([
       fetchRemotive(),
       fetchRemoteOK(),
+      fetchWorkingNomads(),
     ])
-    return NextResponse.json({ ok: true, added: { remotive, remoteok, total: remotive + remoteok } })
+    const total = remotive + remoteok + workingnomads
+    return NextResponse.json({ ok: true, added: { remotive, remoteok, workingnomads, total } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }

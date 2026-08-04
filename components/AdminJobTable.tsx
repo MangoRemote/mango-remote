@@ -75,6 +75,9 @@ export default function AdminJobTable({ jobs: initialJobs }: Props) {
                 <td style={{ color: expiringSoon ? '#C2410C' : 'var(--muted)', fontSize: 12.5 }}>{expires}</td>
                 <td>
                   <div style={{ display: 'flex', gap: 8 }}>
+                    {job.status === 'pending' && (
+                      <button onClick={() => update(job.id, { status: 'live' })} style={{ background: '#16a34a', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, padding: '3px 8px', borderRadius: 4 }}>✓ Approve</button>
+                    )}
                     <a href={`/admin/edit-job/${job.id}`} style={{ fontSize: 12.5, color: 'var(--muted)' }}>Edit</a>
                     <button onClick={() => deleteJob(job.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12.5, color: '#dc2626' }}>Delete</button>
                   </div>
