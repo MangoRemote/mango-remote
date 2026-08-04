@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { User } from '@supabase/supabase-js'
+import type { Job } from '@/lib/types'
 
 export const metadata: Metadata = {
   title: 'My Account — MangoRemote',
@@ -16,6 +17,7 @@ const PREVIEW_SUB = { plan: 'premium', status: 'active', current_period_end: '20
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ upgraded?: string }> }) {
   let user: User | { email: string; created_at: string; id: string } | null = null
   let sub: { plan: string; status: string; current_period_end: string } | null = null
+  let savedJobs: Job[] = []
 
   if (PREVIEW_MODE) {
     user = PREVIEW_USER
@@ -25,12 +27,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) redirect('/auth/login')
     user = authUser
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('plan, status, current_period_end')
-      .eq('user_id', authUser.id)
-      .single()
-    sub = data
+    const [{ data: subData }, { data: savedData }] = await Promise.all([
+      supabase.from('subscriptions').select('plan, status, current_period_end').eq('user_id', authUser.id).single(),
+      supabase.from('saved_jobs').select('job_id, jobs(*, company:companies(*), category:categories(*))').eq('user_id', authUser.id).order('created_at', { ascending: false }),
+    ])
+    sub = subData
+    savedJobs = ((savedData || []).map((r: { jobs: unknown }) => r.jobs).filter(Boolean)) as Job[]
   }
 
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active'
@@ -90,6 +92,23 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           </div>
         </div>
       </div>
+
+      {savedJobs.length > 0 && (
+        <div className="account-saved">
+          <h2 className="account-saved-title">Saved Jobs</h2>
+          <div className="account-saved-list">
+            {savedJobs.map(job => (
+              <Link key={job.id} href={`/jobs/${job.slug}`} className="account-saved-row">
+                <div>
+                  <div className="account-saved-job-title">{job.title}</div>
+                  <div className="account-saved-company">{job.company?.name}</div>
+                </div>
+                <span className="account-saved-arrow">→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!isPremium && (
         <div className="account-upsell">

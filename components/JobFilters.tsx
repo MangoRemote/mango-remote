@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import type { Category } from '@/lib/types'
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
 export default function JobFilters({ categories, currentParams }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const update = useCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -23,6 +24,11 @@ export default function JobFilters({ categories, currentParams }: Props) {
     router.push(`/jobs?${params.toString()}`)
   }, [router, searchParams])
 
+  const updateDebounced = useCallback((key: string, value: string) => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    debounceTimer.current = setTimeout(() => update(key, value), 400)
+  }, [update])
+
   return (
     <div className="filter-bar">
       <input
@@ -30,7 +36,7 @@ export default function JobFilters({ categories, currentParams }: Props) {
         className="search-input"
         placeholder="Search jobs..."
         defaultValue={currentParams.q || ''}
-        onChange={e => update('q', e.target.value)}
+        onChange={e => updateDebounced('q', e.target.value)}
       />
 
       <select

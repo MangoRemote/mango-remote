@@ -41,6 +41,7 @@ export default async function JobsPage({ searchParams }: Props) {
     .from('jobs')
     .select('*, company:companies(*), category:categories(*)')
     .eq('status', 'live')
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .order('is_featured', { ascending: false })
     .order('published_at', { ascending: false })
 
@@ -58,9 +59,13 @@ export default async function JobsPage({ searchParams }: Props) {
     query = query.eq('asia_friendly', true)
   }
 
-  const { data: jobs } = await query
-  const { data: categories } = await supabase.from('categories').select('*').order('name')
+  const [{ data: jobs }, { data: categories }, { data: savedData }] = await Promise.all([
+    query,
+    supabase.from('categories').select('*').order('name'),
+    user ? supabase.from('saved_jobs').select('job_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
+  ])
 
+  const savedIds = new Set((savedData || []).map((r: { job_id: string }) => r.job_id))
   const allJobs = (jobs || []) as Job[]
   const splitAt = Math.ceil(allJobs.length / 2)
   const freeJobs = allJobs.slice(0, splitAt)
@@ -80,7 +85,7 @@ export default async function JobsPage({ searchParams }: Props) {
 
       <div>
         {freeJobs.map(job => (
-          <JobRow key={job.id} job={job} />
+          <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
         ))}
 
         {premiumJobs.length > 0 && !isPremium && (
@@ -93,7 +98,7 @@ export default async function JobsPage({ searchParams }: Props) {
         )}
 
         {premiumJobs.length > 0 && isPremium && premiumJobs.map(job => (
-          <JobRow key={job.id} job={job} />
+          <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
         ))}
 
         {allJobs.length === 0 && (

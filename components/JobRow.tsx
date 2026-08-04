@@ -1,9 +1,12 @@
 import Link from 'next/link'
 import type { Job } from '@/lib/types'
+import SaveButton from './SaveButton'
 
 interface Props {
   job: Job
   locked?: boolean
+  saved?: boolean
+  isLoggedIn?: boolean
 }
 
 function daysAgo(dateStr: string): string {
@@ -55,7 +58,7 @@ function CompanyAvatar({ name }: { name: string }) {
   return <div className="company-avatar" style={{ background: colour, color: '#fff', borderColor: 'transparent' }}>{initials}</div>
 }
 
-export default function JobRow({ job, locked = false }: Props) {
+export default function JobRow({ job, locked = false, saved = false, isLoggedIn = false }: Props) {
   const salary = formatSalary(job)
   const companyName = job.company?.name || 'Unknown'
   const categoryName = job.category?.name || ''
@@ -88,6 +91,7 @@ export default function JobRow({ job, locked = false }: Props) {
         {!job.is_featured && <span className="days-ago">{daysAgo(job.created_at)}</span>}
         {job.is_featured && <span className="days-ago">{daysAgo(job.created_at)}</span>}
         {locked && <span style={{ fontSize: 16 }}>🔒</span>}
+        {isLoggedIn && !locked && <SaveButton jobId={job.id} initialSaved={saved} />}
       </div>
     </>
   )
