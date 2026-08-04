@@ -62,7 +62,15 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   const salary = formatSalary(job)
   const companyName = job.company?.name || 'Unknown'
   const categoryName = job.category?.name || ''
-  const regionTags = (job.region_tags || []).filter(r => r && r !== 'Remote Worldwide' && r !== 'Remote Asia')
+  const rawRegions = (job.region_tags || []).filter(Boolean)
+  const regionLabel = (r: string) => {
+    const l = r.toLowerCase()
+    if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global')) return { icon: '🌍', label: 'Work from Anywhere' }
+    if (l.includes('apac') || l.includes('asia')) return { icon: '🌏', label: 'APAC' }
+    if (l.includes('europe')) return { icon: '🇪🇺', label: 'Europe' }
+    if (l.includes('usa') || l.includes('united states')) return { icon: '🇺🇸', label: 'USA' }
+    return { icon: '📍', label: r }
+  }
 
   const inner = (
     <>
@@ -79,7 +87,10 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
           {salary && <span className="salary-inline">{salary}</span>}
         </div>
         <div className="job-card-bottom">
-          {regionTags.map(r => <span key={r} className="tag">📍 {r}</span>)}
+          {rawRegions.map(r => {
+            const { icon, label } = regionLabel(r)
+            return <span key={r} className="tag">{icon} {label}</span>
+          })}
         </div>
       </div>
 
