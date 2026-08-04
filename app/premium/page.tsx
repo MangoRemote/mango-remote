@@ -60,7 +60,7 @@ export default async function PremiumPage() {
               <div className="premium-plan-name">Monthly</div>
               <div className="premium-plan-price">$12.99<span>/mo</span></div>
               <div className="premium-plan-note">Billed monthly · Full flexibility</div>
-              <CheckoutButton plan="monthly" isLoggedIn={!!user} />
+              <CheckoutButton plan="monthly" />
               <div className="premium-plan-cancel">Cancel anytime</div>
             </div>
 
@@ -69,7 +69,7 @@ export default async function PremiumPage() {
               <div className="premium-plan-name">Quarterly</div>
               <div className="premium-plan-price">$9.99<span>/mo</span></div>
               <div className="premium-plan-note">$29.99 billed every 3 months · <strong style={{color:'#16a34a'}}>Save 23%</strong></div>
-              <CheckoutButton plan="quarterly" isLoggedIn={!!user} />
+              <CheckoutButton plan="quarterly" />
               <div className="premium-plan-cancel">Cancel anytime</div>
             </div>
 
@@ -77,7 +77,7 @@ export default async function PremiumPage() {
               <div className="premium-plan-name">Annual</div>
               <div className="premium-plan-price">$6.99<span>/mo</span></div>
               <div className="premium-plan-note">$83.88 billed yearly · <strong style={{color:'#16a34a'}}>Save 46%</strong></div>
-              <CheckoutButton plan="annual" isLoggedIn={!!user} />
+              <CheckoutButton plan="annual" />
               <div className="premium-plan-cancel">Cancel anytime</div>
             </div>
           </div>
@@ -125,17 +125,10 @@ export default async function PremiumPage() {
   )
 }
 
-function CheckoutButton({ plan, isLoggedIn }: { plan: string; isLoggedIn: boolean }) {
-  if (!isLoggedIn) {
-    return (
-      <Link href={`/auth/login?next=/premium`} className="premium-plan-btn" style={{display:'block',textAlign:'center',textDecoration:'none'}}>
-        Get started
-      </Link>
-    )
-  }
+function CheckoutButton({ plan }: { plan: string }) {
   return (
     <form action={`/api/checkout/premium?plan=${plan}`} method="post">
-      <button type="submit" className="premium-plan-btn">Subscribe now</button>
+      <button type="submit" className="premium-plan-btn">Get started</button>
     </form>
   )
 }

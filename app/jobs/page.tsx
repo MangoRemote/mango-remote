@@ -72,6 +72,24 @@ export default async function JobsPage({ searchParams }: Props) {
   const premiumJobs = allJobs.slice(splitAt)
 
   return (
+    <>
+      <div className="hero">
+        <h1>Remote jobs that let you<br /><em>live in Asia.</em></h1>
+        <p className="hero-sub">
+          For remote professionals who've chosen Asia. Hand-picked roles from employers who mean it.
+        </p>
+        <form action="/jobs" method="get" className="hero-search">
+          <input
+            type="search"
+            name="q"
+            placeholder="Search roles, companies..."
+            defaultValue={params.q || ''}
+            autoComplete="off"
+          />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+
     <main>
       <div className="job-count-bar">
         <span>{allJobs.length} remote jobs</span>
@@ -108,5 +126,6 @@ export default async function JobsPage({ searchParams }: Props) {
         )}
       </div>
     </main>
+    </>
   )
 }
