@@ -12,7 +12,13 @@ export default function SetPasswordPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // Supabase puts the token in the URL hash — client handles it automatically
+    const supabase = createClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setError('')
+      }
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
