@@ -32,7 +32,7 @@ export default async function PremiumPage() {
 
         <div className="premium-stats">
           <div className="premium-stat">
-            <strong>100+</strong>
+            <strong>50+</strong>
             <span>Curated jobs</span>
           </div>
           <div className="premium-stat-divider" />
