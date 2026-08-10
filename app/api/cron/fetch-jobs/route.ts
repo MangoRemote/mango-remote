@@ -164,9 +164,18 @@ async function getOrCreateCompany(name: string, website?: string, logoUrl?: stri
   return data?.id ?? null
 }
 
-async function jobExists(applyUrl: string): Promise<boolean> {
-  const { data } = await getSupabase().from('jobs').select('id').eq('apply_url', applyUrl).single()
-  return !!data
+async function jobExists(applyUrl: string, title?: string, companyName?: string): Promise<boolean> {
+  const { data: byUrl } = await getSupabase().from('jobs').select('id').eq('apply_url', applyUrl).single()
+  if (byUrl) return true
+  if (title && companyName) {
+    const { data: byTitle } = await getSupabase()
+      .from('jobs')
+      .select('id, company:companies(name)')
+      .ilike('title', title)
+      .single()
+    if ((byTitle?.company as { name: string } | null)?.name === companyName) return true
+  }
+  return false
 }
 
 async function fetchRemotive(): Promise<number> {
@@ -178,7 +187,7 @@ async function fetchRemotive(): Promise<number> {
   for (const job of jobs) {
     if (isSuspiciousTitle(job.title)) continue
     if (!isValidDescription(job.description)) continue
-    if (await jobExists(job.url)) continue
+    if (await jobExists(job.url, job.title, job.company_name)) continue
 
     const regionTags = getRegionTags(job.candidate_required_location || '')
     if (!regionTags) continue
@@ -233,7 +242,7 @@ async function fetchWorkingNomads(): Promise<number> {
     if (!job.url || !job.company_name || !job.title) continue
     if (isSuspiciousTitle(job.title)) continue
     if (!isValidDescription(job.description)) continue
-    if (await jobExists(job.url)) continue
+    if (await jobExists(job.url, job.title, job.company_name)) continue
 
     const regionTags = getRegionTags(job.location || 'worldwide')
     if (!regionTags) continue

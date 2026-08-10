@@ -154,9 +154,20 @@ async function getOrCreateCompany(name, website, logoUrl) {
   return data?.id ?? null
 }
 
-async function jobExists(applyUrl) {
-  const { data } = await supabase.from('jobs').select('id').eq('apply_url', applyUrl).single()
-  return !!data
+async function jobExists(applyUrl, title, companyName) {
+  // Check by URL first
+  const { data: byUrl } = await supabase.from('jobs').select('id').eq('apply_url', applyUrl).single()
+  if (byUrl) return true
+  // Also check by title + company name to prevent duplicates with different URLs
+  if (title && companyName) {
+    const { data: byTitle } = await supabase
+      .from('jobs')
+      .select('id, company:companies(name)')
+      .ilike('title', title)
+      .single()
+    if (byTitle?.company?.name === companyName) return true
+  }
+  return false
 }
 
 async function fetchRemotive() {
@@ -169,7 +180,7 @@ async function fetchRemotive() {
   for (const job of jobs) {
     if (isSuspiciousTitle(job.title)) continue
     if (!isValidDescription(job.description)) continue
-    if (await jobExists(job.url)) continue
+    if (await jobExists(job.url, job.title, job.company_name)) continue
 
     const regionTags = getRegionTags(job.candidate_required_location || '')
     if (!regionTags) continue
@@ -228,7 +239,7 @@ async function fetchWorkingNomads() {
     if (!job.url || !job.company_name || !job.title) continue
     if (isSuspiciousTitle(job.title)) continue
     if (!isValidDescription(job.description)) continue
-    if (await jobExists(job.url)) continue
+    if (await jobExists(job.url, job.title, job.company_name)) continue
 
     const regionTags = getRegionTags(job.location || 'worldwide')
     if (!regionTags) continue
