@@ -139,9 +139,7 @@ export default async function JobPage({ params }: Props) {
       {/* Description */}
       <div className="job-detail-body">
         <h2 className="job-detail-section-title">About the role</h2>
-        <div className="job-detail-description">
-          {j.description}
-        </div>
+        <div className="job-detail-description" dangerouslySetInnerHTML={{ __html: j.description || '' }} />
       </div>
 
       {/* Apply CTA bottom */}
