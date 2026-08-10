@@ -64,7 +64,7 @@ export default async function HomePage() {
           <button type="submit">Search</button>
         </form>
         <form action="/jobs" method="get" className="hero-filters">
-          <select name="category" className="hero-filter-select" onChange="this.form.submit()">
+          <select name="category" className="hero-filter-select" onChange={e => (e.target.form as HTMLFormElement)?.submit()}>
             <option value="">All Categories</option>
             <option value="engineering">Engineering</option>
             <option value="design">Design</option>
@@ -76,20 +76,20 @@ export default async function HomePage() {
             <option value="hr-recruiting">HR & Recruiting</option>
             <option value="operations">Operations</option>
           </select>
-          <select name="level" className="hero-filter-select" onChange="this.form.submit()">
+          <select name="level" className="hero-filter-select" onChange={e => (e.target.form as HTMLFormElement)?.submit()}>
             <option value="">Experience Level</option>
             <option value="entry">Entry Level</option>
             <option value="mid">Mid Level</option>
             <option value="senior">Senior</option>
             <option value="manager">Manager / Lead</option>
           </select>
-          <select name="posted" className="hero-filter-select" onChange="this.form.submit()">
+          <select name="posted" className="hero-filter-select" onChange={e => (e.target.form as HTMLFormElement)?.submit()}>
             <option value="">Any Time</option>
             <option value="1">Last 24 hours</option>
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
           </select>
-          <select name="type" className="hero-filter-select" onChange="this.form.submit()">
+          <select name="type" className="hero-filter-select" onChange={e => (e.target.form as HTMLFormElement)?.submit()}>
             <option value="">Job Type</option>
             <option value="full-time">Full-time</option>
             <option value="contract">Contract</option>
