@@ -1,13 +1,12 @@
-import { NextResponse } from 'next/server'
+// Run: node scripts/fetch-jobs.mjs
 import { createClient } from '@supabase/supabase-js'
 
-const getSupabase = () => createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const SUPABASE_URL = 'https://wdzxmpgqcoycrhdzxrzr.supabase.co'
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkenhtcGdxY295Y3JoZHp4cnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDcwNDMyNCwiZXhwIjoyMTAwMjgwMzI0fQ.RJRPD9kuQiOEgtZC_K-aODbaQ740HVoz-q-VuN6LU8g'
 
-// Remotive returns full strings e.g. "Software Development", "Sales"
-const REMOTIVE_CATEGORY_MAP: Record<string, string> = {
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+const REMOTIVE_CATEGORY_MAP = {
   'software development': 'Engineering',
   'devops / sysadmin': 'Engineering',
   'devops': 'Engineering',
@@ -36,8 +35,7 @@ const REMOTIVE_CATEGORY_MAP: Record<string, string> = {
   'all others': 'Operations',
 }
 
-// Working Nomads returns "Development", "Administration", etc.
-const WN_CATEGORY_MAP: Record<string, string> = {
+const WN_CATEGORY_MAP = {
   'development': 'Engineering',
   'design': 'Design',
   'marketing': 'Marketing',
@@ -68,27 +66,7 @@ const JUNK_TITLE_PATTERNS = [
   /test job/i,
 ]
 
-function isSuspiciousTitle(title: string): boolean {
-  if (!title || title.length < 3 || title.length > 120) return true
-  return JUNK_TITLE_PATTERNS.some(p => p.test(title))
-}
-
-function isValidDescription(desc: string | null | undefined): boolean {
-  if (!desc) return false
-  const stripped = desc.replace(/<[^>]+>/g, '').trim()
-  return stripped.length >= 100
-}
-
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-}
-
-function uniqueSlug(base: string) {
-  return slugify(base) + '-' + Math.random().toString(36).slice(2, 6)
-}
-
-// Specific Asian countries mapped to display name
-const ASIAN_COUNTRY_MAP: [RegExp, string][] = [
+const ASIAN_COUNTRY_MAP = [
   [/\bjapan\b/i, 'Japan'],
   [/\bvietnam\b/i, 'Vietnam'],
   [/\bthailand\b/i, 'Thailand'],
@@ -109,10 +87,8 @@ const ASIAN_COUNTRY_MAP: [RegExp, string][] = [
   [/\bindia\b/i, 'India'],
 ]
 
-// General Asia/APAC keywords
 const APAC_KEYWORDS = ['asia', 'apac', 'southeast asia', 'east asia', 'asia pacific', 'asia-pacific']
 
-// Locations that mean the job is NOT suitable for this site
 const EXCLUDE_LOCATION_PATTERNS = [
   /^australia$/i, /^canada$/i, /^usa$/i, /^united states$/i,
   /^new zealand$/i, /^south africa$/i, /^brazil$/i, /^mexico$/i,
@@ -123,40 +99,54 @@ const EXCLUDE_LOCATION_PATTERNS = [
   /\b(texas|oklahoma|florida|california|new york)\b/i,
 ]
 
-function getRegionTags(location: string): string[] | null {
+function getRegionTags(location) {
   const l = (location || '').trim()
   if (!l) return ['Worldwide']
   const ll = l.toLowerCase()
 
-  // Worldwide / no restriction
-  if (!l || ll.includes('worldwide') || ll.includes('anywhere') || ll.includes('global') ||
+  if (ll.includes('worldwide') || ll.includes('anywhere') || ll.includes('global') ||
       ll.includes('international') || ll === 'remote') return ['Worldwide']
 
-  // Specific Asian country
   for (const [pattern, name] of ASIAN_COUNTRY_MAP) {
     if (pattern.test(l)) return [name]
   }
 
-  // General APAC/Asia region
   if (APAC_KEYWORDS.some(k => ll.includes(k))) return ['APAC']
 
-  // Anything Europe or non-Asia specific — exclude
   if (EXCLUDE_LOCATION_PATTERNS.some(p => p.test(l))) return null
 
-  // Default — assume worldwide
   return ['Worldwide']
 }
 
-async function getCategoryId(name: string): Promise<string | null> {
-  const { data } = await getSupabase().from('categories').select('id').ilike('name', name).single()
+function isSuspiciousTitle(title) {
+  if (!title || title.length < 3 || title.length > 120) return true
+  return JUNK_TITLE_PATTERNS.some(p => p.test(title))
+}
+
+function isValidDescription(desc) {
+  if (!desc) return false
+  const stripped = desc.replace(/<[^>]+>/g, '').trim()
+  return stripped.length >= 100
+}
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+function uniqueSlug(base) {
+  return slugify(base) + '-' + Math.random().toString(36).slice(2, 6)
+}
+
+async function getCategoryId(name) {
+  const { data } = await supabase.from('categories').select('id').ilike('name', name).single()
   return data?.id ?? null
 }
 
-async function getOrCreateCompany(name: string, website?: string, logoUrl?: string): Promise<string | null> {
-  const { data: existing } = await getSupabase().from('companies').select('id').eq('name', name).single()
+async function getOrCreateCompany(name, website, logoUrl) {
+  const { data: existing } = await supabase.from('companies').select('id').eq('name', name).single()
   if (existing) return existing.id
   const slug = slugify(name)
-  const { data } = await getSupabase()
+  const { data } = await supabase
     .from('companies')
     .insert({ name, slug, website: website || null, logo_url: logoUrl || null, verified: false })
     .select('id')
@@ -164,14 +154,15 @@ async function getOrCreateCompany(name: string, website?: string, logoUrl?: stri
   return data?.id ?? null
 }
 
-async function jobExists(applyUrl: string): Promise<boolean> {
-  const { data } = await getSupabase().from('jobs').select('id').eq('apply_url', applyUrl).single()
+async function jobExists(applyUrl) {
+  const { data } = await supabase.from('jobs').select('id').eq('apply_url', applyUrl).single()
   return !!data
 }
 
-async function fetchRemotive(): Promise<number> {
+async function fetchRemotive() {
+  console.log('Fetching Remotive...')
   const res = await fetch('https://remotive.com/api/remote-jobs?limit=200')
-  if (!res.ok) return 0
+  if (!res.ok) { console.log('Remotive failed:', res.status); return 0 }
   const { jobs } = await res.json()
   let count = 0
 
@@ -188,7 +179,7 @@ async function fetchRemotive(): Promise<number> {
     const companyId = await getOrCreateCompany(job.company_name, job.company_url, job.company_logo)
     if (!companyId) continue
 
-    await getSupabase().from('jobs').insert({
+    const { error } = await supabase.from('jobs').insert({
       title: job.title,
       slug: uniqueSlug(job.title),
       company_id: companyId,
@@ -206,12 +197,16 @@ async function fetchRemotive(): Promise<number> {
       published_at: job.publication_date || new Date().toISOString(),
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
-    count++
+    if (!error) {
+      count++
+      if (regionTags[0] !== 'Worldwide') console.log(`  + [${regionTags[0]}] ${job.title}`)
+    }
   }
   return count
 }
 
-async function fetchWorkingNomads(): Promise<number> {
+async function fetchWorkingNomads() {
+  console.log('Fetching Working Nomads...')
   const [resWorldwide, resApac] = await Promise.all([
     fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=150&location=worldwide'),
     fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=50&location=apac'),
@@ -220,8 +215,8 @@ async function fetchWorkingNomads(): Promise<number> {
   const worldwide = resWorldwide.ok ? await resWorldwide.json() : []
   const apac = resApac.ok ? await resApac.json() : []
 
-  const seen = new Set<string>()
-  const allJobs = [...worldwide, ...apac].filter((j: { url: string }) => {
+  const seen = new Set()
+  const allJobs = [...worldwide, ...apac].filter(j => {
     if (seen.has(j.url)) return false
     seen.add(j.url)
     return true
@@ -243,7 +238,7 @@ async function fetchWorkingNomads(): Promise<number> {
     const companyId = await getOrCreateCompany(job.company_name, job.company_url || undefined, job.company_logo || undefined)
     if (!companyId) continue
 
-    await getSupabase().from('jobs').insert({
+    const { error } = await supabase.from('jobs').insert({
       title: job.title,
       slug: uniqueSlug(job.title),
       company_id: companyId,
@@ -261,25 +256,18 @@ async function fetchWorkingNomads(): Promise<number> {
       published_at: job.pub_date || new Date().toISOString(),
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
-    count++
+    if (!error) {
+      count++
+      if (regionTags[0] !== 'Worldwide') console.log(`  + [${regionTags[0]}] ${job.title}`)
+    }
   }
   return count
 }
 
-export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+const remotive = await fetchRemotive()
+console.log(`Remotive: ${remotive} new jobs`)
 
-  try {
-    const [remotive, workingnomads] = await Promise.all([
-      fetchRemotive(),
-      fetchWorkingNomads(),
-    ])
-    const total = remotive + workingnomads
-    return NextResponse.json({ ok: true, added: { remotive, workingnomads, total } })
-  } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
-  }
-}
+const wn = await fetchWorkingNomads()
+console.log(`Working Nomads: ${wn} new jobs`)
+
+console.log(`Total: ${remotive + wn} new jobs added`)

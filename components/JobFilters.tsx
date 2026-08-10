@@ -90,7 +90,7 @@ export default function JobFilters({ categories, currentParams }: Props) {
         onChange={e => update('asia', e.target.value)}
       >
         <option value="">All regions</option>
-        <option value="1">🌏 APAC only</option>
+        <option value="1">🌏 Asia / APAC only</option>
       </select>
     </div>
   )

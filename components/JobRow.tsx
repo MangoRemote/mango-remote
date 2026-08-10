@@ -63,12 +63,18 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   const companyName = job.company?.name || 'Unknown'
   const categoryName = job.category?.name || ''
   const rawRegions = (job.region_tags || []).filter(Boolean)
+  const COUNTRY_FLAGS: Record<string, string> = {
+    'Japan': '🇯🇵', 'Vietnam': '🇻🇳', 'Thailand': '🇹🇭', 'Indonesia': '🇮🇩',
+    'Philippines': '🇵🇭', 'Malaysia': '🇲🇾', 'Singapore': '🇸🇬', 'South Korea': '🇰🇷',
+    'Taiwan': '🇹🇼', 'Hong Kong': '🇭🇰', 'China': '🇨🇳', 'Cambodia': '🇰🇭',
+    'Myanmar': '🇲🇲', 'Laos': '🇱🇦', 'Sri Lanka': '🇱🇰', 'Nepal': '🇳🇵',
+    'Bangladesh': '🇧🇩', 'India': '🇮🇳',
+  }
   const regionLabel = (r: string) => {
     const l = r.toLowerCase()
     if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global')) return { icon: '🌍', label: 'Work from Anywhere' }
-    if (l.includes('apac') || l.includes('asia')) return { icon: '🌏', label: 'APAC' }
-    if (l.includes('europe')) return { icon: '🇪🇺', label: 'Europe' }
-    if (l.includes('usa') || l.includes('united states')) return { icon: '🇺🇸', label: 'USA' }
+    if (l === 'apac' || l.includes('asia')) return { icon: '🌏', label: 'APAC' }
+    if (COUNTRY_FLAGS[r]) return { icon: COUNTRY_FLAGS[r], label: r }
     return { icon: '📍', label: r }
   }
 
