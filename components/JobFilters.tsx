@@ -6,7 +6,20 @@ import type { Category } from '@/lib/types'
 
 interface Props {
   categories: Category[]
-  currentParams: { q?: string; category?: string; type?: string; region?: string; asia?: string; level?: string; posted?: string }
+  currentParams: { q?: string; category?: string; type?: string; region?: string; asia?: string; country?: string; level?: string; posted?: string }
+}
+
+const ASIAN_COUNTRIES = [
+  'Japan', 'Vietnam', 'Thailand', 'Indonesia', 'Philippines',
+  'Malaysia', 'Singapore', 'South Korea', 'Taiwan', 'Hong Kong',
+  'China', 'India', 'Cambodia', 'Myanmar', 'Sri Lanka',
+]
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  'Japan': '🇯🇵', 'Vietnam': '🇻🇳', 'Thailand': '🇹🇭', 'Indonesia': '🇮🇩',
+  'Philippines': '🇵🇭', 'Malaysia': '🇲🇾', 'Singapore': '🇸🇬', 'South Korea': '🇰🇷',
+  'Taiwan': '🇹🇼', 'Hong Kong': '🇭🇰', 'China': '🇨🇳', 'India': '🇮🇳',
+  'Cambodia': '🇰🇭', 'Myanmar': '🇲🇲', 'Sri Lanka': '🇱🇰',
 }
 
 export default function JobFilters({ categories, currentParams }: Props) {
@@ -21,6 +34,9 @@ export default function JobFilters({ categories, currentParams }: Props) {
     } else {
       params.delete(key)
     }
+    // When switching region/country, clear the other
+    if (key === 'country' && value) params.delete('asia')
+    if (key === 'asia' && value) params.delete('country')
     router.push(`/jobs?${params.toString()}`)
   }, [router, searchParams])
 
@@ -48,6 +64,24 @@ export default function JobFilters({ categories, currentParams }: Props) {
         {categories.map(c => (
           <option key={c.id} value={c.slug}>{c.name}</option>
         ))}
+      </select>
+
+      <select
+        className="filter-select"
+        value={currentParams.country || (currentParams.asia === '1' ? '_asia' : '')}
+        onChange={e => {
+          const v = e.target.value
+          if (v === '_asia') update('asia', '1')
+          else update('country', v)
+        }}
+      >
+        <option value="">All regions</option>
+        <option value="_asia">🌏 Asia / APAC</option>
+        <optgroup label="── Countries ──">
+          {ASIAN_COUNTRIES.map(c => (
+            <option key={c} value={c}>{COUNTRY_FLAGS[c]} {c}</option>
+          ))}
+        </optgroup>
       </select>
 
       <select
@@ -82,15 +116,6 @@ export default function JobFilters({ categories, currentParams }: Props) {
         <option value="1">Last 24 hours</option>
         <option value="7">Last 7 days</option>
         <option value="30">Last 30 days</option>
-      </select>
-
-      <select
-        className="filter-select"
-        value={currentParams.asia || ''}
-        onChange={e => update('asia', e.target.value)}
-      >
-        <option value="">All regions</option>
-        <option value="1">🌏 Asia / APAC only</option>
       </select>
     </div>
   )

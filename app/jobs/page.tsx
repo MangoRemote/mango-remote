@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 interface Props {
-  searchParams: Promise<{ q?: string; category?: string; type?: string; region?: string; asia?: string; level?: string; posted?: string }>
+  searchParams: Promise<{ q?: string; category?: string; type?: string; region?: string; asia?: string; country?: string; level?: string; posted?: string }>
 }
 
 export default async function JobsPage({ searchParams }: Props) {
@@ -58,7 +58,10 @@ export default async function JobsPage({ searchParams }: Props) {
     query = query.eq('employment_type', params.type)
   }
   if (params.asia === '1') {
-    query = query.contains('region_tags', ['APAC'])
+    query = query.or('region_tags.cs.{"APAC"},region_tags.cs.{"Japan"},region_tags.cs.{"Vietnam"},region_tags.cs.{"Thailand"},region_tags.cs.{"Indonesia"},region_tags.cs.{"Philippines"},region_tags.cs.{"Malaysia"},region_tags.cs.{"Singapore"},region_tags.cs.{"South Korea"},region_tags.cs.{"Taiwan"},region_tags.cs.{"Hong Kong"},region_tags.cs.{"China"},region_tags.cs.{"India"},region_tags.cs.{"Cambodia"},region_tags.cs.{"Myanmar"},region_tags.cs.{"Sri Lanka"}')
+  }
+  if (params.country) {
+    query = query.contains('region_tags', [params.country])
   }
   if (params.level) {
     const levelMap: Record<string, string[]> = {
@@ -88,9 +91,9 @@ export default async function JobsPage({ searchParams }: Props) {
 
   const savedIds = new Set((savedData || []).map((r: { job_id: string }) => r.job_id))
   const allJobs = (jobs || []) as Job[]
-  const splitAt = Math.ceil(allJobs.length / 2)
-  const freeJobs = allJobs.slice(0, splitAt)
-  const premiumJobs = allJobs.slice(splitAt)
+  const FREE_LIMIT = 5
+  const freeJobs = allJobs.slice(0, FREE_LIMIT)
+  const premiumJobs = allJobs.slice(FREE_LIMIT)
 
   return (
     <>
@@ -119,7 +122,7 @@ export default async function JobsPage({ searchParams }: Props) {
 
       <JobFilters
         categories={(categories || []) as Category[]}
-        currentParams={params as { q?: string; category?: string; type?: string; asia?: string; level?: string; posted?: string }}
+        currentParams={params as { q?: string; category?: string; type?: string; asia?: string; country?: string; level?: string; posted?: string }}
       />
 
       <div>
