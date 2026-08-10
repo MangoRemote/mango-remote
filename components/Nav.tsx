@@ -8,6 +8,7 @@ import type { User } from '@supabase/supabase-js'
 export default function Nav() {
   const [user, setUser] = useState<User | null>(null)
   const [ready, setReady] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -23,7 +24,7 @@ export default function Nav() {
 
   return (
     <nav className="nav">
-      <Link href="/" className="nav-logo">
+      <Link href="/" className="nav-logo" onClick={() => setMenuOpen(false)}>
         <span className="nav-logo-emoji">🥭</span>
         <span className="logo-mango">Mango</span><span className="logo-remote">Remote</span>
       </Link>
@@ -51,6 +52,28 @@ export default function Nav() {
           </>
         )}
       </div>
+
+      {/* Mobile hamburger */}
+      <button
+        className="nav-hamburger"
+        aria-label="Toggle menu"
+        onClick={() => setMenuOpen(o => !o)}
+      >
+        <span /><span /><span />
+      </button>
+
+      {menuOpen && (
+        <div className="nav-mobile-menu" onClick={() => setMenuOpen(false)}>
+          <Link href="/jobs">Remote Jobs</Link>
+          <Link href="/premium">Unlock All Jobs</Link>
+          <Link href="/post-a-job">Post a Job</Link>
+          <Link href="/about">About</Link>
+          {ready && user
+            ? <Link href="/account">My Account</Link>
+            : <Link href="/auth/login">Sign in</Link>
+          }
+        </div>
+      )}
     </nav>
   )
 }

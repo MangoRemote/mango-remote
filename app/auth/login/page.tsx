@@ -30,7 +30,7 @@ export default function LoginPage() {
     }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { setError('Incorrect email or password. Premium members only.'); setLoading(false); return }
+    if (error) { setError('Incorrect email or password.'); setLoading(false); return }
     router.push('/account')
     router.refresh()
   }
@@ -58,7 +58,7 @@ export default function LoginPage() {
           <h1>{mode === 'login' ? 'Sign in' : 'Reset password'}</h1>
           <p>
             {mode === 'login'
-              ? <>MangoRemote is for Premium members. <a href="/premium" style={{color:'var(--accent)', fontWeight:500}}>Not a member yet?</a></>
+              ? <>Sign in to your MangoRemote account. New here? <a href="/premium" style={{color:'var(--accent)', fontWeight:500}}>Get Premium →</a></>
               : "Enter your email and we'll send you a reset link."
             }
           </p>

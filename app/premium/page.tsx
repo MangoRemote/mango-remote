@@ -32,7 +32,7 @@ export default async function PremiumPage() {
 
         <div className="premium-stats">
           <div className="premium-stat">
-            <strong>50+</strong>
+            <strong>30+</strong>
             <span>Curated jobs</span>
           </div>
           <div className="premium-stat-divider" />
@@ -111,13 +111,28 @@ export default async function PremiumPage() {
         </div>
       </div>
 
-      {/* Review */}
-      <div className="premium-review-section">
-        <div className="premium-review-label">Success story</div>
-        <div className="premium-featured-review">
-          <div className="premium-review-stars">★★★★★</div>
-          <p>&quot;Send us your reviews and we&apos;ll feature them here.&quot;</p>
-          <span>— Your name here · Job title</span>
+      {/* What happens next */}
+      <div className="premium-next-section">
+        <div className="premium-why-inner">
+          <span className="premium-eyebrow" style={{color: 'var(--accent)'}}>What happens next</span>
+          <h2>You&apos;re one click away.</h2>
+          <div className="premium-benefits">
+            <div className="premium-benefit">
+              <div className="premium-benefit-num">01</div>
+              <strong>Instant access</strong>
+              <p>The moment payment goes through, all jobs on the board unlock. No waiting, no review.</p>
+            </div>
+            <div className="premium-benefit">
+              <div className="premium-benefit-num">02</div>
+              <strong>Weekly job digest</strong>
+              <p>Every week we email you the freshest Asia-compatible roles — straight to your inbox.</p>
+            </div>
+            <div className="premium-benefit">
+              <div className="premium-benefit-num">03</div>
+              <strong>Cancel anytime</strong>
+              <p>No contracts. Pause or cancel from your account page whenever you like.</p>
+            </div>
+          </div>
         </div>
       </div>
 

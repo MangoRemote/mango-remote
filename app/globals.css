@@ -1470,7 +1470,8 @@ a {
   padding: 48px 24px 16px;
 }
 
-.premium-why {
+.premium-why,
+.premium-next-section {
   background: #FAFBFC;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -1785,6 +1786,9 @@ a {
 @media (max-width: 640px) {
   .premium-reviews-grid { grid-template-columns: 1fr; }
   .premium-hero h1 { font-size: 28px; }
+  .premium-stats { flex-direction: column; gap: 16px; }
+  .premium-stat-divider { display: none; }
+  .premium-stat { padding: 0; text-align: center; }
 }
 
 /* ─── Post a job ─── */
@@ -1863,9 +1867,53 @@ textarea.form-input {
   text-decoration: underline;
 }
 
+/* ─── Hamburger / mobile menu ─── */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: auto;
+}
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+}
+.nav-mobile-menu {
+  position: absolute;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  padding: 8px 0;
+}
+.nav-mobile-menu a {
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+.nav-mobile-menu a:last-child { border-bottom: none; }
+.nav-mobile-menu a:hover { background: var(--bg); }
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .nav-links { display: none; }
+  .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
   .page-layout { grid-template-columns: 1fr; }
   .sidebar { display: none; }
   .hero h1 { font-size: 28px; }
