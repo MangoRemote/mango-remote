@@ -9,18 +9,18 @@ export default function Footer() {
           <p className="footer-tagline">Remote jobs that let you live in Asia.</p>
           <div className="footer-social">
             <a href="https://instagram.com/sidneyygeorge" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://linkedin.com/company/mangoremote" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           </div>
         </div>
 
         <div className="footer-links">
           <div className="footer-col">
             <div className="footer-col-heading">Jobs</div>
-            <Link href="/">All Remote Jobs</Link>
-            <Link href="/?category=Engineering">Engineering</Link>
-            <Link href="/?category=Design">Design</Link>
-            <Link href="/?category=Marketing">Marketing</Link>
-            <Link href="/?category=Sales">Sales</Link>
+            <Link href="/jobs">All Remote Jobs</Link>
+            <Link href="/jobs?category=Engineering">Engineering</Link>
+            <Link href="/jobs?category=Design">Design</Link>
+            <Link href="/jobs?category=Marketing">Marketing</Link>
+            <Link href="/jobs?category=Sales">Sales</Link>
           </div>
           <div className="footer-col">
             <div className="footer-col-heading">Site</div>
