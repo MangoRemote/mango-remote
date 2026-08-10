@@ -273,12 +273,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [remotive, workingnomads] = await Promise.all([
-      fetchRemotive(),
-      fetchWorkingNomads(),
-    ])
-    const total = remotive + workingnomads
-    return NextResponse.json({ ok: true, added: { remotive, workingnomads, total } })
+    const workingnomads = await fetchWorkingNomads()
+    return NextResponse.json({ ok: true, added: { workingnomads, total: workingnomads } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }

@@ -264,10 +264,6 @@ async function fetchWorkingNomads() {
   return count
 }
 
-const remotive = await fetchRemotive()
-console.log(`Remotive: ${remotive} new jobs`)
-
 const wn = await fetchWorkingNomads()
 console.log(`Working Nomads: ${wn} new jobs`)
-
-console.log(`Total: ${remotive + wn} new jobs added`)
+console.log(`Total: ${wn} new jobs added`)
