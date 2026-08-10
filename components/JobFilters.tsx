@@ -6,7 +6,7 @@ import type { Category } from '@/lib/types'
 
 interface Props {
   categories: Category[]
-  currentParams: { q?: string; category?: string; type?: string; region?: string; asia?: string }
+  currentParams: { q?: string; category?: string; type?: string; region?: string; asia?: string; level?: string; posted?: string }
 }
 
 export default function JobFilters({ categories, currentParams }: Props) {
@@ -63,11 +63,34 @@ export default function JobFilters({ categories, currentParams }: Props) {
 
       <select
         className="filter-select"
+        value={currentParams.level || ''}
+        onChange={e => update('level', e.target.value)}
+      >
+        <option value="">Experience level</option>
+        <option value="entry">Entry level</option>
+        <option value="mid">Mid level</option>
+        <option value="senior">Senior</option>
+        <option value="manager">Manager / Lead</option>
+      </select>
+
+      <select
+        className="filter-select"
+        value={currentParams.posted || ''}
+        onChange={e => update('posted', e.target.value)}
+      >
+        <option value="">Any time</option>
+        <option value="1">Last 24 hours</option>
+        <option value="7">Last 7 days</option>
+        <option value="30">Last 30 days</option>
+      </select>
+
+      <select
+        className="filter-select"
         value={currentParams.asia || ''}
         onChange={e => update('asia', e.target.value)}
       >
         <option value="">All regions</option>
-        <option value="1">🌏 Asia-friendly only</option>
+        <option value="1">🌏 APAC only</option>
       </select>
     </div>
   )

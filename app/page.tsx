@@ -63,39 +63,39 @@ export default async function HomePage() {
           />
           <button type="submit">Search</button>
         </form>
-        <div className="hero-filters">
-          <select name="category" className="hero-filter-select">
+        <form action="/jobs" method="get" className="hero-filters">
+          <select name="category" className="hero-filter-select" onChange="this.form.submit()">
             <option value="">All Categories</option>
-            <option>Engineering</option>
-            <option>Design</option>
-            <option>Marketing</option>
-            <option>Sales</option>
-            <option>Customer Support</option>
-            <option>Product</option>
-            <option>Finance</option>
-            <option>HR</option>
-            <option>Operations</option>
+            <option value="engineering">Engineering</option>
+            <option value="design">Design</option>
+            <option value="marketing">Marketing</option>
+            <option value="sales">Sales</option>
+            <option value="support">Support</option>
+            <option value="product">Product</option>
+            <option value="finance">Finance</option>
+            <option value="hr-recruiting">HR & Recruiting</option>
+            <option value="operations">Operations</option>
           </select>
-          <select name="level" className="hero-filter-select">
+          <select name="level" className="hero-filter-select" onChange="this.form.submit()">
             <option value="">Experience Level</option>
-            <option>Entry Level</option>
-            <option>Mid Level</option>
-            <option>Senior</option>
-            <option>Manager</option>
+            <option value="entry">Entry Level</option>
+            <option value="mid">Mid Level</option>
+            <option value="senior">Senior</option>
+            <option value="manager">Manager / Lead</option>
           </select>
-          <select name="posted" className="hero-filter-select">
+          <select name="posted" className="hero-filter-select" onChange="this.form.submit()">
             <option value="">Any Time</option>
             <option value="1">Last 24 hours</option>
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
           </select>
-          <select name="type" className="hero-filter-select">
+          <select name="type" className="hero-filter-select" onChange="this.form.submit()">
             <option value="">Job Type</option>
             <option value="full-time">Full-time</option>
             <option value="contract">Contract</option>
             <option value="part-time">Part-time</option>
           </select>
-        </div>
+        </form>
       </div>
 
 

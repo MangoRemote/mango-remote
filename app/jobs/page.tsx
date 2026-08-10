@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 interface Props {
-  searchParams: Promise<{ q?: string; category?: string; type?: string; region?: string; asia?: string }>
+  searchParams: Promise<{ q?: string; category?: string; type?: string; region?: string; asia?: string; level?: string; posted?: string }>
 }
 
 export default async function JobsPage({ searchParams }: Props) {
@@ -60,6 +60,25 @@ export default async function JobsPage({ searchParams }: Props) {
   if (params.asia === '1') {
     query = query.contains('region_tags', ['APAC'])
   }
+  if (params.level) {
+    const levelMap: Record<string, string[]> = {
+      entry:   ['%junior%', '%entry%', '%graduate%', '%intern%', '%trainee%'],
+      mid:     ['%mid%', '%intermediate%', '%associate%'],
+      senior:  ['%senior%', '%sr.%', '%sr %', '%principal%', '%staff %', '%expert%'],
+      manager: ['%manager%', '%lead%', '%head of%', '%director%', '%vp %', '%vice president%', '%cto%', '%cpo%'],
+    }
+    const patterns = levelMap[params.level]
+    if (patterns) {
+      query = query.or(patterns.map(p => `title.ilike.${p}`).join(','))
+    }
+  }
+  if (params.posted) {
+    const days = parseInt(params.posted)
+    if (!isNaN(days)) {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+      query = query.gte('published_at', since)
+    }
+  }
 
   const [{ data: jobs }, { data: categories }, { data: savedData }] = await Promise.all([
     query,
@@ -100,7 +119,7 @@ export default async function JobsPage({ searchParams }: Props) {
 
       <JobFilters
         categories={(categories || []) as Category[]}
-        currentParams={params}
+        currentParams={params as { q?: string; category?: string; type?: string; asia?: string; level?: string; posted?: string }}
       />
 
       <div>
