@@ -87,26 +87,48 @@ function uniqueSlug(base: string) {
   return slugify(base) + '-' + Math.random().toString(36).slice(2, 6)
 }
 
+// Asian countries — location-specific jobs here are still valid for the site
+const ASIA_KEYWORDS = [
+  'asia', 'apac', 'southeast asia', 'east asia',
+  'japan', 'china', 'hong kong', 'taiwan', 'south korea', 'korea',
+  'singapore', 'thailand', 'vietnam', 'indonesia', 'philippines',
+  'malaysia', 'cambodia', 'myanmar', 'laos', 'bangladesh', 'sri lanka',
+  'india', 'pakistan', 'nepal', 'myanmar', 'brunei', 'timor',
+]
+
+// Non-Asia countries/regions that mean the job is NOT suitable
 const EXCLUDE_LOCATION_PATTERNS = [
+  /^australia$/i, /^canada$/i, /^usa$/i, /^united states$/i,
+  /^new zealand$/i, /^south africa$/i, /^brazil$/i, /^mexico$/i,
   /\busa only\b/i, /\bus only\b/i, /\bunited states only\b/i,
   /\bcanada only\b/i, /\buk only\b/i, /\baustralia only\b/i,
   /\bnew zealand only\b/i, /\bnorth america\b/i,
-  /^australia$/i, /^canada$/i, /^usa$/i, /^united states$/i,
-  /texas/i, /oklahoma/i, /south africa/i,
+  /\b(texas|oklahoma|florida|california|new york)\b/i,
 ]
 
 function getRegionTags(location: string): string[] | null {
   const l = (location || '').trim()
   if (!l) return ['Worldwide']
-  if (EXCLUDE_LOCATION_PATTERNS.some(p => p.test(l))) return null
+
   const ll = l.toLowerCase()
-  if (ll.includes('asia') || ll.includes('apac') || ll.includes('japan') || ll.includes('india') ||
-      ll.includes('southeast asia') || ll.includes('east asia') || ll.includes('singapore') ||
-      ll.includes('thailand') || ll.includes('vietnam') || ll.includes('china')) return ['APAC']
-  if (ll.includes('europe') || ll.includes('cet') || ll.includes('germany') || ll.includes('sweden') ||
-      ll.includes('poland') || ll.includes('ukraine')) return ['Europe']
+
+  // Asian country/region — always include as APAC
+  if (ASIA_KEYWORDS.some(k => ll.includes(k))) return ['APAC']
+
+  // Worldwide / no restriction
   if (ll.includes('worldwide') || ll.includes('anywhere') || ll.includes('global') ||
       ll.includes('remote') || ll.includes('international')) return ['Worldwide']
+
+  // Europe — include (compatible with Asia time zones enough to be useful)
+  if (ll.includes('europe') || ll.includes('cet') || ll.includes('eet') ||
+      ll.includes('germany') || ll.includes('sweden') || ll.includes('poland') ||
+      ll.includes('ukraine') || ll.includes('netherlands') || ll.includes('france') ||
+      ll.includes('spain') || ll.includes('portugal') || ll.includes('romania')) return ['Europe']
+
+  // Non-Asia specific countries — exclude
+  if (EXCLUDE_LOCATION_PATTERNS.some(p => p.test(l))) return null
+
+  // Default — assume worldwide
   return ['Worldwide']
 }
 
