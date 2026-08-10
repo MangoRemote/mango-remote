@@ -49,14 +49,16 @@ export default async function JobsPage({ searchParams }: Props) {
     query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
   }
   if (params.category) {
-    const { data: cat } = await supabase.from('categories').select('id').eq('slug', params.category).single()
+    const { data: cat } = await supabase.from('categories').select('id')
+      .or(`slug.eq.${params.category},slug.ilike.${params.category.toLowerCase()}`)
+      .single()
     if (cat) query = query.eq('category_id', cat.id)
   }
   if (params.type) {
     query = query.eq('employment_type', params.type)
   }
   if (params.asia === '1') {
-    query = query.eq('asia_friendly', true)
+    query = query.contains('region_tags', ['APAC'])
   }
 
   const [{ data: jobs }, { data: categories }, { data: savedData }] = await Promise.all([

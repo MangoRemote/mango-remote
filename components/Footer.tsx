@@ -17,10 +17,10 @@ export default function Footer() {
           <div className="footer-col">
             <div className="footer-col-heading">Jobs</div>
             <Link href="/jobs">All Remote Jobs</Link>
-            <Link href="/jobs?category=Engineering">Engineering</Link>
-            <Link href="/jobs?category=Design">Design</Link>
-            <Link href="/jobs?category=Marketing">Marketing</Link>
-            <Link href="/jobs?category=Sales">Sales</Link>
+            <Link href="/jobs?category=engineering">Engineering</Link>
+            <Link href="/jobs?category=design">Design</Link>
+            <Link href="/jobs?category=marketing">Marketing</Link>
+            <Link href="/jobs?category=sales">Sales</Link>
           </div>
           <div className="footer-col">
             <div className="footer-col-heading">Site</div>

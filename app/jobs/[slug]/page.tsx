@@ -71,7 +71,7 @@ export default async function JobPage({ params }: Props) {
       <div className="job-detail-breadcrumb">
         <Link href="/">Remote Jobs</Link>
         <span>›</span>
-        {category && <Link href={`/?category=${encodeURIComponent(category.name)}`}>{category.name}</Link>}
+        {category && <Link href={`/jobs?category=${category.slug}`}>{category.name}</Link>}
         {category && <span>›</span>}
         <span>{j.title}</span>
       </div>
@@ -133,7 +133,7 @@ export default async function JobPage({ params }: Props) {
         >
           Apply for this role →
         </a>
-        <p className="job-detail-apply-note">You'll be taken to {company?.name}'s careers page</p>
+        <p className="job-detail-apply-note">You'll be taken to {company?.name?.trim()}'s careers page</p>
       </div>
 
       {/* Description */}
@@ -152,7 +152,7 @@ export default async function JobPage({ params }: Props) {
         >
           Apply for this role →
         </a>
-        <p className="job-detail-apply-note">You'll be taken to {company?.name}'s careers page</p>
+        <p className="job-detail-apply-note">You'll be taken to {company?.name?.trim()}'s careers page</p>
       </div>
 
       {/* Related jobs */}
