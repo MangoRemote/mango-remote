@@ -21,6 +21,12 @@ export default async function PremiumPage() {
     isPremium = sub?.plan === 'premium' && sub?.status === 'active'
   }
 
+  const { count: jobCount } = await supabase
+    .from('jobs')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'live')
+  const jobStat = jobCount ? `${jobCount}+` : '30+'
+
   return (
     <div className="premium-page-v2">
 
@@ -32,7 +38,7 @@ export default async function PremiumPage() {
 
         <div className="premium-stats">
           <div className="premium-stat">
-            <strong>30+</strong>
+            <strong>{jobStat}</strong>
             <span>Curated jobs</span>
           </div>
           <div className="premium-stat-divider" />
