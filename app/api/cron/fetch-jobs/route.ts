@@ -174,7 +174,8 @@ async function jobExists(applyUrl: string, title?: string, companyName?: string)
       .ilike('title', title)
       .limit(1)
     const match = byTitle?.[0]
-    if ((match?.company as { name: string } | null)?.name === companyName) return true
+    const co = match?.company as unknown as { name: string } | null
+    if (co?.name === companyName) return true
   }
   return false
 }
