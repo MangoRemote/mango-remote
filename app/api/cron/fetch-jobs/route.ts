@@ -223,33 +223,39 @@ async function fetchRemotive(): Promise<number> {
 }
 
 async function fetchWorkingNomads(): Promise<number> {
+  // Fetch APAC/Asia and Worldwide ("work from anywhere") endpoints separately
+  // so we can tag jobs correctly based on which list they came from.
   const [resWorldwide, resApac, resAsia] = await Promise.all([
-    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=300&location=worldwide'),
-    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=200&location=apac'),
-    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=200&location=asia'),
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=500&location=worldwide'),
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=500&location=apac'),
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=500&location=asia'),
   ])
 
-  const worldwide = resWorldwide.ok ? await resWorldwide.json() : []
-  const apac = resApac.ok ? await resApac.json() : []
-  const asia = resAsia.ok ? await resAsia.json() : []
+  const worldwide: { url: string }[] = resWorldwide.ok ? await resWorldwide.json() : []
+  const apac: { url: string }[] = resApac.ok ? await resApac.json() : []
+  const asia: { url: string }[] = resAsia.ok ? await resAsia.json() : []
 
+  // Tag each job by its source endpoint, dedup by URL
   const seen = new Set<string>()
-  const allJobs = [...worldwide, ...apac, ...asia].filter((j: { url: string }) => {
-    if (seen.has(j.url)) return false
-    seen.add(j.url)
-    return true
-  })
+  type TaggedJob = { job: Record<string, string>; regionTags: string[] }
+  const tagged: TaggedJob[] = []
+
+  const apacUrls = new Set([...apac, ...asia].map((j) => j.url))
+
+  for (const j of [...apac, ...asia, ...worldwide]) {
+    const job = j as Record<string, string>
+    if (!job.url || seen.has(job.url)) continue
+    seen.add(job.url)
+    tagged.push({ job, regionTags: apacUrls.has(job.url) ? ['APAC'] : ['Worldwide'] })
+  }
 
   let count = 0
 
-  for (const job of allJobs) {
+  for (const { job, regionTags } of tagged) {
     if (!job.url || !job.company_name || !job.title) continue
     if (isSuspiciousTitle(job.title)) continue
     if (!isValidDescription(job.description)) continue
     if (await jobExists(job.url, job.title, job.company_name)) continue
-
-    const regionTags = getRegionTags(job.location || 'worldwide')
-    if (!regionTags) continue
 
     const categoryName = WN_CATEGORY_MAP[(job.category_name || '').toLowerCase().trim()] || 'Operations'
     const categoryId = await getCategoryId(categoryName)
