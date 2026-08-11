@@ -165,15 +165,16 @@ async function getOrCreateCompany(name: string, website?: string, logoUrl?: stri
 }
 
 async function jobExists(applyUrl: string, title?: string, companyName?: string): Promise<boolean> {
-  const { data: byUrl } = await getSupabase().from('jobs').select('id').eq('apply_url', applyUrl).single()
+  const { data: byUrl } = await getSupabase().from('jobs').select('id').eq('apply_url', applyUrl).maybeSingle()
   if (byUrl) return true
   if (title && companyName) {
     const { data: byTitle } = await getSupabase()
       .from('jobs')
       .select('id, company:companies(name)')
       .ilike('title', title)
-      .single()
-    if ((byTitle?.company as { name: string } | null)?.name === companyName) return true
+      .limit(1)
+    const match = byTitle?.[0]
+    if ((match?.company as { name: string } | null)?.name === companyName) return true
   }
   return false
 }
