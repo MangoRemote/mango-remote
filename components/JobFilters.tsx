@@ -97,6 +97,17 @@ export default function JobFilters({ categories, currentParams }: Props) {
 
       <select
         className="filter-select"
+        value={currentParams.level || ''}
+        onChange={e => update('level', e.target.value)}
+      >
+        <option value="">All levels</option>
+        <option value="senior">Senior</option>
+        <option value="manager">Manager / Lead</option>
+        <option value="entry">Entry level</option>
+      </select>
+
+      <select
+        className="filter-select"
         value={currentParams.posted || ''}
         onChange={e => update('posted', e.target.value)}
       >

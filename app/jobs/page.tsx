@@ -81,7 +81,7 @@ export default async function JobsPage({ searchParams }: Props) {
   }
   if (params.level) {
     const levelMap: Record<string, string[]> = {
-      entry:   ['%junior%', '%entry%', '%graduate%', '%intern%', '%trainee%'],
+      entry:   ['%junior%', '%entry%', '%graduate%', '%intern%', '%trainee%', '%no experience%'],
       mid:     ['%mid%', '%intermediate%', '%associate%'],
       senior:  ['%senior%', '%sr.%', '%sr %', '%principal%', '%staff %', '%expert%'],
       manager: ['%manager%', '%lead%', '%head of%', '%director%', '%vp %', '%vice president%', '%cto%', '%cpo%'],
