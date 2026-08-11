@@ -43,6 +43,9 @@ export default function AboutPage() {
           <p>
             The idea is simple: work somewhere you're never too far from a mango smoothie. I will die on this hill — mangoes are the greatest fruit on earth, and they just feel like Asia. The best continent in the world.
           </p>
+          <p>
+            I'm proud to say MangoRemote is the first and leading remote job board for people who want to live in Asia.
+          </p>
           <p className="about-sign">
             — Sidney George, Founder
           </p>
