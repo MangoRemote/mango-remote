@@ -4,14 +4,25 @@ import PremiumGate from '@/components/PremiumGate'
 import JobFilters from '@/components/JobFilters'
 import type { Job, Category } from '@/lib/types'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Remote Jobs — MangoRemote',
-  description: 'Browse remote jobs compatible with living in Asia. Asia-friendly timezone tags on every listing.',
+  description: 'Browse remote jobs compatible with living in Asia. Every role vetted for timezone compatibility. Filter by country, category, and experience level.',
 }
 
 interface Props {
-  searchParams: Promise<{ q?: string; category?: string; type?: string; region?: string; asia?: string; country?: string; level?: string; posted?: string }>
+  searchParams: Promise<{
+    q?: string
+    category?: string
+    type?: string
+    region?: string
+    asia?: string
+    country?: string
+    level?: string
+    posted?: string
+    sort?: string
+  }>
 }
 
 export default async function JobsPage({ searchParams }: Props) {
@@ -42,8 +53,13 @@ export default async function JobsPage({ searchParams }: Props) {
     .select('*, company:companies(*), category:categories(*)')
     .eq('status', 'live')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-    .order('is_featured', { ascending: false })
-    .order('published_at', { ascending: false })
+
+  // Sort
+  if (params.sort === 'featured') {
+    query = query.order('is_featured', { ascending: false }).order('published_at', { ascending: false })
+  } else {
+    query = query.order('published_at', { ascending: false })
+  }
 
   if (params.q) {
     query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
@@ -71,9 +87,7 @@ export default async function JobsPage({ searchParams }: Props) {
       manager: ['%manager%', '%lead%', '%head of%', '%director%', '%vp %', '%vice president%', '%cto%', '%cpo%'],
     }
     const patterns = levelMap[params.level]
-    if (patterns) {
-      query = query.or(patterns.map(p => `title.ilike.${p}`).join(','))
-    }
+    if (patterns) query = query.or(patterns.map(p => `title.ilike.${p}`).join(','))
   }
   if (params.posted) {
     const days = parseInt(params.posted)
@@ -95,29 +109,37 @@ export default async function JobsPage({ searchParams }: Props) {
   const freeJobs = allJobs.slice(0, FREE_LIMIT)
   const premiumJobs = allJobs.slice(FREE_LIMIT)
 
-  return (
-    <>
-      <div className="hero">
-        <h1>Remote jobs that let you<br /><em>live in Asia.</em></h1>
-        <p className="hero-sub">
-          For remote professionals who've chosen Asia. Hand-picked roles from employers who mean it.
-        </p>
-        <form action="/jobs" method="get" className="hero-search">
-          <input
-            type="search"
-            name="q"
-            placeholder="Search roles, companies..."
-            defaultValue={params.q || ''}
-            autoComplete="off"
-          />
-          <button type="submit">Search</button>
-        </form>
-      </div>
+  const hasFilters = !!(params.q || params.category || params.type || params.asia || params.country || params.level || params.posted)
 
-    <main>
-      <div className="job-count-bar">
-        <span>{allJobs.length} remote jobs</span>
-        {params.q && <span>Results for &quot;{params.q}&quot;</span>}
+  const activeFilterCount = [params.q, params.category, params.type, params.asia || params.country, params.level, params.posted].filter(Boolean).length
+
+  return (
+    <main className="jobs-page">
+      <div className="jobs-page-header">
+        <div className="jobs-page-header-top">
+          <h1 className="jobs-page-title">
+            Remote Jobs
+            <span className="jobs-page-count">{allJobs.length} {allJobs.length === 1 ? 'job' : 'jobs'}</span>
+          </h1>
+          <div className="jobs-page-sort">
+            <SortSelect current={params.sort} currentParams={params} />
+          </div>
+        </div>
+
+        {hasFilters && (
+          <div className="active-filters-bar">
+            {params.q && <span className="active-filter-chip">"{params.q}"</span>}
+            {params.category && <span className="active-filter-chip">{params.category}</span>}
+            {params.country && <span className="active-filter-chip">{params.country}</span>}
+            {params.asia === '1' && <span className="active-filter-chip">Asia / APAC</span>}
+            {params.level && <span className="active-filter-chip">{params.level}</span>}
+            {params.type && <span className="active-filter-chip">{params.type}</span>}
+            {params.posted && <span className="active-filter-chip">Last {params.posted === '1' ? '24h' : params.posted + 'd'}</span>}
+            <Link href="/jobs" className="clear-filters-link">
+              Clear {activeFilterCount > 1 ? 'all' : ''} filters ×
+            </Link>
+          </div>
+        )}
       </div>
 
       <JobFilters
@@ -125,14 +147,14 @@ export default async function JobsPage({ searchParams }: Props) {
         currentParams={params as { q?: string; category?: string; type?: string; asia?: string; country?: string; level?: string; posted?: string }}
       />
 
-      <div>
+      <div className="jobs-list">
         {freeJobs.map(job => (
           <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
         ))}
 
         {premiumJobs.length > 0 && !isPremium && (
           <>
-            <PremiumGate count={premiumJobs.length} />
+            <PremiumGate count={premiumJobs.length} hasSearch={hasFilters} />
             {premiumJobs.map(job => (
               <JobRow key={job.id} job={job} locked />
             ))}
@@ -144,12 +166,32 @@ export default async function JobsPage({ searchParams }: Props) {
         ))}
 
         {allJobs.length === 0 && (
-          <div style={{ padding: '48px 24px', color: 'var(--muted)', fontSize: 14 }}>
-            No jobs found. Try adjusting your filters.
+          <div className="jobs-empty">
+            <div className="jobs-empty-icon">🔍</div>
+            <h3>No jobs found</h3>
+            <p>Try broadening your search or <Link href="/jobs">clear all filters</Link>.</p>
           </div>
         )}
       </div>
     </main>
-    </>
+  )
+}
+
+function SortSelect({ current, currentParams }: { current?: string; currentParams: Record<string, string | undefined> }) {
+  const base = new URLSearchParams()
+  Object.entries(currentParams).forEach(([k, v]) => { if (v && k !== 'sort') base.set(k, v) })
+
+  const recentUrl = `/jobs?${base.toString()}`
+  const featuredUrl = `/jobs?${base.toString()}${base.toString() ? '&' : ''}sort=featured`
+
+  return (
+    <div className="sort-links">
+      <Link href={recentUrl} className={`sort-link ${!current || current === 'recent' ? 'sort-link-active' : ''}`}>
+        Most recent
+      </Link>
+      <Link href={featuredUrl} className={`sort-link ${current === 'featured' ? 'sort-link-active' : ''}`}>
+        Featured first
+      </Link>
+    </div>
   )
 }

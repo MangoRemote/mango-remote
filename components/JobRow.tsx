@@ -9,6 +9,10 @@ interface Props {
   isLoggedIn?: boolean
 }
 
+function isNew(dateStr: string): boolean {
+  return Date.now() - new Date(dateStr).getTime() < 48 * 60 * 60 * 1000
+}
+
 function daysAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const days = Math.floor(diff / 86400000)
@@ -28,18 +32,22 @@ function formatSalary(job: Job): string {
 }
 
 const CATEGORY_COLOURS: Record<string, string> = {
-  'Engineering':        '#3B82F6',
-  'Design':             '#8B5CF6',
-  'Marketing':          '#EC4899',
-  'Sales':              '#10B981',
-  'Customer Support':   '#F59E0B',
-  'Product':            '#6366F1',
-  'Finance':            '#14B8A6',
-  'HR':                 '#F97316',
-  'Operations':         '#64748B',
-  'Healthcare':         '#EF4444',
-  'Data':               '#0EA5E9',
-  'Legal':              '#A855F7',
+  'Engineering':      '#3B82F6',
+  'Design':           '#8B5CF6',
+  'Marketing':        '#EC4899',
+  'Sales':            '#10B981',
+  'Support':          '#F59E0B',
+  'Customer Support': '#F59E0B',
+  'Product':          '#6366F1',
+  'Finance':          '#14B8A6',
+  'HR & Recruiting':  '#F97316',
+  'HR':               '#F97316',
+  'Operations':       '#64748B',
+  'Healthcare':       '#EF4444',
+  'Data':             '#0EA5E9',
+  'Legal':            '#A855F7',
+  'Management':       '#0D9488',
+  'Writing':          '#D97706',
 }
 
 function categoryColour(name: string): string {
@@ -52,10 +60,20 @@ const AVATAR_COLOURS = [
   '#F97316','#64748B','#0EA5E9','#A855F7',
 ]
 
-function CompanyAvatar({ name }: { name: string }) {
-  const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
-  const colour = AVATAR_COLOURS[name.charCodeAt(0) % AVATAR_COLOURS.length]
-  return <div className="company-avatar" style={{ background: colour, color: '#fff', borderColor: 'transparent' }}>{initials}</div>
+const COUNTRY_FLAGS: Record<string, string> = {
+  'Japan': '🇯🇵', 'Vietnam': '🇻🇳', 'Thailand': '🇹🇭', 'Indonesia': '🇮🇩',
+  'Philippines': '🇵🇭', 'Malaysia': '🇲🇾', 'Singapore': '🇸🇬', 'South Korea': '🇰🇷',
+  'Taiwan': '🇹🇼', 'Hong Kong': '🇭🇰', 'China': '🇨🇳', 'Cambodia': '🇰🇭',
+  'Myanmar': '🇲🇲', 'Laos': '🇱🇦', 'Sri Lanka': '🇱🇰', 'Nepal': '🇳🇵',
+  'Bangladesh': '🇧🇩', 'India': '🇮🇳',
+}
+
+function regionLabel(r: string): { icon: string; label: string } {
+  const l = r.toLowerCase()
+  if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global')) return { icon: '🌍', label: 'Work from Anywhere' }
+  if (l === 'apac' || l === 'asia pacific') return { icon: '🌏', label: 'APAC' }
+  if (COUNTRY_FLAGS[r]) return { icon: COUNTRY_FLAGS[r], label: r }
+  return { icon: '📍', label: r }
 }
 
 export default function JobRow({ job, locked = false, saved = false, isLoggedIn = false }: Props) {
@@ -63,30 +81,26 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   const companyName = job.company?.name || 'Unknown'
   const categoryName = job.category?.name || ''
   const rawRegions = (job.region_tags || []).filter(Boolean)
-  const COUNTRY_FLAGS: Record<string, string> = {
-    'Japan': '🇯🇵', 'Vietnam': '🇻🇳', 'Thailand': '🇹🇭', 'Indonesia': '🇮🇩',
-    'Philippines': '🇵🇭', 'Malaysia': '🇲🇾', 'Singapore': '🇸🇬', 'South Korea': '🇰🇷',
-    'Taiwan': '🇹🇼', 'Hong Kong': '🇭🇰', 'China': '🇨🇳', 'Cambodia': '🇰🇭',
-    'Myanmar': '🇲🇲', 'Laos': '🇱🇦', 'Sri Lanka': '🇱🇰', 'Nepal': '🇳🇵',
-    'Bangladesh': '🇧🇩', 'India': '🇮🇳',
-  }
-  const regionLabel = (r: string) => {
-    const l = r.toLowerCase()
-    if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global')) return { icon: '🌍', label: 'Work from Anywhere' }
-    if (l === 'apac' || l.includes('asia')) return { icon: '🌏', label: 'APAC' }
-    if (COUNTRY_FLAGS[r]) return { icon: COUNTRY_FLAGS[r], label: r }
-    return { icon: '📍', label: r }
-  }
+  const jobIsNew = isNew(job.published_at || job.created_at)
 
   const inner = (
     <>
-      {job.company?.logo_url && (
+      {job.company?.logo_url ? (
         <img src={job.company.logo_url} alt={companyName} className="company-avatar-img" />
+      ) : (
+        <div className="company-avatar" style={{
+          background: AVATAR_COLOURS[(companyName.charCodeAt(0) || 0) % AVATAR_COLOURS.length],
+          color: '#fff',
+          borderColor: 'transparent',
+        }}>
+          {companyName.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+        </div>
       )}
 
       <div className="job-card-body">
         <div className="job-card-top">
           <span className="job-title">{job.title}</span>
+          {jobIsNew && !locked && <span className="new-badge">New</span>}
         </div>
         <div className="job-card-meta">
           <span className="job-company">{companyName}</span>
@@ -97,6 +111,7 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
             const { icon, label } = regionLabel(r)
             return <span key={r} className="tag">{icon} {label}</span>
           })}
+          {rawRegions.length === 0 && <span className="tag">🌍 Work from Anywhere</span>}
         </div>
       </div>
 
@@ -105,9 +120,8 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
           <span className="category-badge" style={{ background: categoryColour(categoryName) }}>{categoryName}</span>
         )}
         {job.is_featured && <span className="featured-label">★ Featured</span>}
-        {!job.is_featured && <span className="days-ago">{daysAgo(job.created_at)}</span>}
-        {job.is_featured && <span className="days-ago">{daysAgo(job.created_at)}</span>}
-        {locked && <span style={{ fontSize: 16 }}>🔒</span>}
+        <span className="days-ago">{daysAgo(job.published_at || job.created_at)}</span>
+        {locked && <span className="locked-icon">🔒</span>}
         {isLoggedIn && !locked && <SaveButton jobId={job.id} initialSaved={saved} />}
       </div>
     </>

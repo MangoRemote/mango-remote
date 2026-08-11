@@ -5,6 +5,12 @@ import EmailCapture from '@/components/EmailCapture'
 import HeroFilters from '@/components/HeroFilters'
 import Link from 'next/link'
 import type { Job } from '@/lib/types'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'MangoRemote — Remote Jobs That Let You Live in Asia',
+  description: 'Find remote jobs compatible with living in Thailand, Japan, Vietnam, and across Asia. Every role vetted for timezone flexibility.',
+}
 
 export const revalidate = 60
 
