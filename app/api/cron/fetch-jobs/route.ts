@@ -61,16 +61,68 @@ const WN_CATEGORY_MAP: Record<string, string> = {
 }
 
 const JUNK_TITLE_PATTERNS = [
-  /\b(labourer|laborer|barista|driver|porter|cleaner|cashier|chef|cook|waiter|waitress|bartender|security guard|janitor|plumber|electrician|carpenter)\b/i,
+  // Physical / on-site jobs
+  /\b(labourer|laborer|barista|driver|porter|cleaner|cashier|chef|cook|waiter|waitress|bartender|security guard|janitor|plumber|electrician|carpenter|assembler|warehouse|delivery|forklift|machinist|welder|painter|hvac|mechanic)\b/i,
+  // Garbage placeholder titles
   /your job (title|description|here)/i,
   /page not found/i,
   /untitled/i,
   /test job/i,
+  /^jobs?$/i,
+  /^(hiring|apply|careers|vacancies|openings|positions)$/i,
+  /^how (to )?apply/i,
+  /job title/i,
+  /come join/i,
+  /check back soon/i,
+  /spontan/i,           // "spontaneous application" in French
+  /candidature/i,
+  /open vacanc/i,
+  /join our team/i,
+  /join the family/i,
+  /hiring process/i,
+  /\btest\b/i,
+  // US/non-Asia location restrictions in title
+  /\b(texas|oklahoma|florida|california|new york|chicago|boston|seattle|atlanta)\b/i,
+  /\bgerman\b.*\b(de)\b|\b(de)\b.*\bgerman\b/i,
+  /\bDACH\b/,
+  /\(Remote\s*-\s*(US|USA|UK|Canada|Australia|Germany|France|Spain|Italy)\)/i,
+  // Clearly non-remote
+  /\bin-territory\b/i,
+  /\bon-?site\b/i,
 ]
 
-function isSuspiciousTitle(title: string): boolean {
-  if (!title || title.length < 3 || title.length > 120) return true
-  return JUNK_TITLE_PATTERNS.some(p => p.test(title))
+// Company names whose jobs are always junk
+const JUNK_COMPANIES = [
+  /whiterose janitorial/i,
+  /captain pq chemical/i,
+  /corrtech energy/i,
+  /quintessence films/i,
+  /beltrami county/i,
+  /precision safe sidewalks/i,
+  /belfast.*chamber/i,
+  /giant leap consulting/i,
+  /twittaer/i,
+  /manunor/i,
+  /four seasons/i,
+  /philadelphia school/i,
+  /haus\.com/i,
+  /neulogy/i,
+  /tees components/i,
+  /yacht club games/i,
+  /germain h/i,
+  /compact home lifts/i,
+  /fedex/i,
+  /jayco/i,
+  /nebraska public power/i,
+]
+
+function isSuspiciousTitle(title: string, companyName?: string): boolean {
+  if (!title || title.length < 5 || title.length > 120) return true
+  if (JUNK_TITLE_PATTERNS.some(p => p.test(title))) return true
+  if (companyName && JUNK_COMPANIES.some(p => p.test(companyName))) return true
+  // All-caps titles (usually scraper artifacts)
+  if (title === title.toUpperCase() && title.length > 5) return true
+  return false
 }
 
 function isValidDescription(desc: string | null | undefined): boolean {
@@ -187,7 +239,7 @@ async function fetchRemotive(): Promise<number> {
   let count = 0
 
   for (const job of jobs) {
-    if (isSuspiciousTitle(job.title)) continue
+    if (isSuspiciousTitle(job.title, job.company_name)) continue
     if (!isValidDescription(job.description)) continue
     if (await jobExists(job.url, job.title, job.company_name)) continue
 
@@ -253,7 +305,7 @@ async function fetchWorkingNomads(): Promise<number> {
 
   for (const { job, regionTags } of tagged) {
     if (!job.url || !job.company_name || !job.title) continue
-    if (isSuspiciousTitle(job.title)) continue
+    if (isSuspiciousTitle(job.title, job.company_name)) continue
     if (!isValidDescription(job.description)) continue
     if (await jobExists(job.url, job.title, job.company_name)) continue
 
