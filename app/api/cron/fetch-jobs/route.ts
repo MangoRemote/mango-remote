@@ -223,16 +223,18 @@ async function fetchRemotive(): Promise<number> {
 }
 
 async function fetchWorkingNomads(): Promise<number> {
-  const [resWorldwide, resApac] = await Promise.all([
-    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=150&location=worldwide'),
-    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=50&location=apac'),
+  const [resWorldwide, resApac, resAsia] = await Promise.all([
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=300&location=worldwide'),
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=200&location=apac'),
+    fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=200&location=asia'),
   ])
 
   const worldwide = resWorldwide.ok ? await resWorldwide.json() : []
   const apac = resApac.ok ? await resApac.json() : []
+  const asia = resAsia.ok ? await resAsia.json() : []
 
   const seen = new Set<string>()
-  const allJobs = [...worldwide, ...apac].filter((j: { url: string }) => {
+  const allJobs = [...worldwide, ...apac, ...asia].filter((j: { url: string }) => {
     if (seen.has(j.url)) return false
     seen.add(j.url)
     return true
