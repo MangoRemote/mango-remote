@@ -20,16 +20,22 @@ export default function AboutPage() {
       <div className="about-body">
         <div className="about-text">
           <p>
-            I'm <strong>Sidney George</strong> — a British expat who packed up and moved to Asia a few years ago. Best decision I ever made.
+            In 2022, I was on my way to Australia. I stopped off in Thailand — I'd visited back in 2011 and had fond memories of the place. I wasn't expecting much. Just a stopover.
           </p>
           <p>
-            But finding remote work that fits life here? That was a grind. Most job boards don't tell you whether a company actually supports async work, whether they care what timezone you're in, or whether "remote" really means "remote from our HQ only."
+            I never made it to Australia.
           </p>
           <p>
-            So I built MangoRemote. Every job is hand-picked. Every listing is checked to make sure it genuinely works for someone based in Southeast or East Asia — whether that's Bangkok, Bali, Chiang Mai, Ho Chi Minh City, or anywhere else you've chosen to be.
+            Like most foreigners who end up staying in Thailand, I became a teacher. The students were lovely. But teaching wasn't my thing — I knew it pretty quickly.
           </p>
           <p>
-            This isn't a scraped job board. It's curated. And it's built by someone living the same life you're trying to live.
+            What changed everything was noticing other foreigners around me. Sitting in nice cafes. Going for a morning run while I was mid-lesson. Showing up on the islands I'd visit on weekends. All working from their laptops. No office. No fixed location. Just a good internet connection and a life that looked exactly how I wanted mine to look.
+          </p>
+          <p>
+            That's when I discovered remote work. And I've been obsessed ever since.
+          </p>
+          <p>
+            The idea that you can earn a real income from anywhere in the world — that's not a fantasy anymore. It's just a job board away. That's why I built MangoRemote.
           </p>
           <p className="about-sign">
             — Sidney George, Founder
