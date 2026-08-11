@@ -285,6 +285,78 @@ async function fetchWorkingNomads(): Promise<number> {
   return count
 }
 
+const REMOTEOK_CATEGORY_MAP: Record<string, string> = {
+  'dev': 'Engineering', 'backend': 'Engineering', 'frontend': 'Engineering',
+  'fullstack': 'Engineering', 'mobile': 'Engineering', 'ios': 'Engineering',
+  'android': 'Engineering', 'devops': 'Engineering', 'infra': 'Engineering',
+  'cloud': 'Engineering', 'python': 'Engineering', 'javascript': 'Engineering',
+  'typescript': 'Engineering', 'react': 'Engineering', 'node': 'Engineering',
+  'design': 'Design', 'ux': 'Design', 'ui': 'Design',
+  'marketing': 'Marketing', 'growth': 'Marketing', 'seo': 'Marketing',
+  'sales': 'Sales', 'bizdev': 'Sales',
+  'support': 'Support', 'customerservice': 'Support',
+  'finance': 'Finance', 'accounting': 'Finance',
+  'hr': 'HR & Recruiting', 'recruiting': 'HR & Recruiting',
+  'data': 'Data', 'analytics': 'Data', 'ml': 'Engineering', 'ai': 'Engineering',
+  'product': 'Product', 'management': 'Management', 'exec': 'Management',
+  'writing': 'Writing', 'content': 'Writing', 'legal': 'Legal',
+  'ops': 'Operations', 'operations': 'Operations',
+}
+
+function remoteokCategory(tags: string[]): string {
+  for (const tag of (tags || [])) {
+    const mapped = REMOTEOK_CATEGORY_MAP[tag.toLowerCase().trim()]
+    if (mapped) return mapped
+  }
+  return 'Operations'
+}
+
+async function fetchRemoteok(): Promise<number> {
+  const res = await fetch('https://remoteok.com/api', {
+    headers: { 'User-Agent': 'MangoRemote/1.0 (hello@mangoremote.com)' },
+  })
+  if (!res.ok) return 0
+
+  const raw = await res.json()
+  const jobs = raw.filter((j: { id?: string }) => j.id)
+  let count = 0
+
+  for (const job of jobs) {
+    if (!job.url || !job.company || !job.position) continue
+    if (isSuspiciousTitle(job.position)) continue
+    if (!isValidDescription(job.description)) continue
+    if (await jobExists(job.url, job.position, job.company)) continue
+
+    const categoryId = await getCategoryId(remoteokCategory(job.tags || []))
+    const logoUrl = job.company_logo || job.logo || null
+    const companyId = await getOrCreateCompany(job.company, undefined, logoUrl)
+    if (!companyId) continue
+
+    await getSupabase().from('jobs').insert({
+      title: job.position,
+      slug: uniqueSlug(job.position),
+      company_id: companyId,
+      description: job.description || '',
+      apply_url: job.url,
+      category_id: categoryId,
+      employment_type: 'full-time',
+      region_tags: ['Worldwide'],
+      salary_min: job.salary_min || null,
+      salary_max: job.salary_max || null,
+      salary_currency: 'USD',
+      is_premium: true,
+      is_featured: false,
+      status: 'live',
+      source: 'remoteok',
+      asia_friendly: true,
+      published_at: job.date || new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    count++
+  }
+  return count
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -292,8 +364,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const workingnomads = await fetchWorkingNomads()
-    return NextResponse.json({ ok: true, added: { workingnomads, total: workingnomads } })
+    const [workingnomads, remoteok] = await Promise.all([
+      fetchWorkingNomads(),
+      fetchRemoteok(),
+    ])
+    const total = workingnomads + remoteok
+    return NextResponse.json({ ok: true, added: { workingnomads, remoteok, total } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
