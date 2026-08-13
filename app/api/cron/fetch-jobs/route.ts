@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { COMPANY_SOURCES } from './companies'
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -329,6 +330,178 @@ async function fetchWorkingNomads(cache: ExistingData): Promise<number> {
   return count
 }
 
+// Map ATS department/category strings to our category names
+const ATS_CATEGORY_MAP: Record<string, string> = {
+  'engineering': 'Engineering', 'software engineering': 'Engineering', 'development': 'Engineering',
+  'infrastructure': 'Engineering', 'data engineering': 'Engineering', 'devops': 'Engineering',
+  'design': 'Design', 'product design': 'Design', 'ux': 'Design',
+  'product': 'Product', 'product management': 'Product Management',
+  'marketing': 'Marketing', 'growth': 'Marketing',
+  'sales': 'Sales', 'business development': 'Sales', 'revenue': 'Sales',
+  'support': 'Support', 'customer success': 'Support', 'customer support': 'Support',
+  'finance': 'Finance', 'accounting': 'Finance',
+  'legal': 'Legal', 'compliance': 'Legal',
+  'hr': 'HR & Recruiting', 'people': 'HR & Recruiting', 'recruiting': 'HR & Recruiting', 'talent': 'HR & Recruiting',
+  'data': 'Data', 'data science': 'Data', 'analytics': 'Data',
+  'writing': 'Writing', 'content': 'Writing',
+  'operations': 'Operations', 'administration': 'Operations', 'general': 'Operations',
+}
+
+function mapCategory(raw: string): string {
+  const lower = (raw || '').toLowerCase().trim()
+  for (const [key, val] of Object.entries(ATS_CATEGORY_MAP)) {
+    if (lower.includes(key)) return val
+  }
+  return 'Operations'
+}
+
+// Is this job remote and APAC/worldwide compatible?
+function isApacOrWorldwide(location: string, isRemote: boolean): { ok: boolean; tags: string[] } {
+  const l = (location || '').toLowerCase()
+
+  if (!isRemote && !l.includes('remote')) return { ok: false, tags: [] }
+
+  // Explicit APAC / Asia countries
+  const asianCountries: [RegExp, string][] = [
+    [/japan/i, 'Japan'], [/vietnam/i, 'Vietnam'], [/thailand/i, 'Thailand'],
+    [/indonesia/i, 'Indonesia'], [/philippines/i, 'Philippines'], [/malaysia/i, 'Malaysia'],
+    [/singapore/i, 'Singapore'], [/south korea|korea/i, 'South Korea'], [/taiwan/i, 'Taiwan'],
+    [/hong kong/i, 'Hong Kong'], [/china/i, 'China'], [/india/i, 'India'],
+    [/cambodia/i, 'Cambodia'], [/myanmar/i, 'Myanmar'], [/sri lanka/i, 'Sri Lanka'],
+  ]
+  for (const [pat, name] of asianCountries) {
+    if (pat.test(location)) return { ok: true, tags: [name] }
+  }
+
+  // General APAC/Asia
+  if (/apac|asia.?pacific|southeast asia|east asia/i.test(location)) return { ok: true, tags: ['APAC'] }
+
+  // Worldwide / anywhere
+  if (!location || /worldwide|anywhere|global|international|^remote$/i.test(location)) {
+    return { ok: true, tags: ['Worldwide'] }
+  }
+
+  // Explicitly non-Asia regions — exclude
+  if (/\b(us|usa|united states|canada|uk|united kingdom|australia|new zealand|europe|emea|latam|dach|cet|eet|north america)\b/i.test(location)) {
+    return { ok: false, tags: [] }
+  }
+
+  // Default: if it's marked remote, assume worldwide
+  if (isRemote) return { ok: true, tags: ['Worldwide'] }
+  return { ok: false, tags: [] }
+}
+
+interface ScrapedJob {
+  title: string
+  applyUrl: string
+  location: string
+  isRemote: boolean
+  department: string
+  description: string
+}
+
+async function fetchGreenhouseJobs(slug: string): Promise<ScrapedJob[]> {
+  const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs?content=true`)
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.jobs || []).map((j: Record<string, unknown>) => {
+    const location = (j.location as { name?: string })?.name || ''
+    return {
+      title: String(j.title || ''),
+      applyUrl: `https://boards.greenhouse.io/${slug}/jobs/${j.id}`,
+      location,
+      isRemote: /remote/i.test(location),
+      department: String((j.departments as Array<{ name: string }>)?.[0]?.name || ''),
+      description: String(j.content || ''),
+    }
+  })
+}
+
+async function fetchAshbyJobs(slug: string): Promise<ScrapedJob[]> {
+  const res = await fetch(`https://api.ashbyhq.com/posting-api/job-board/${slug}?includeCompensation=false`)
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.jobs || []).map((j: Record<string, unknown>) => ({
+    title: String(j.title || ''),
+    applyUrl: String(j.applyUrl || j.jobUrl || ''),
+    location: String(j.location || ''),
+    isRemote: j.isRemote === true || j.workplaceType === 'Remote',
+    department: String((j.department as string) || (j.team as string) || ''),
+    description: String(j.descriptionHtml || j.description || ''),
+  }))
+}
+
+async function fetchLeverJobs(slug: string): Promise<ScrapedJob[]> {
+  const res = await fetch(`https://api.lever.co/v0/postings/${slug}?mode=json`)
+  if (!res.ok) return []
+  const data = await res.json()
+  const postings = Array.isArray(data) ? data : (data.data || [])
+  return postings.map((j: Record<string, unknown>) => {
+    const location = String((j.categories as Record<string, string>)?.location || j.workplaceType || '')
+    return {
+      title: String(j.text || ''),
+      applyUrl: String(j.applyUrl || `https://jobs.lever.co/${slug}/${j.id}/apply`),
+      location,
+      isRemote: /remote/i.test(location) || /remote/i.test(String(j.commitment || '')),
+      department: String((j.categories as Record<string, string>)?.department || ''),
+      description: String((j.descriptionPlain as string) || ''),
+    }
+  })
+}
+
+async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
+  let total = 0
+
+  for (const source of COMPANY_SOURCES) {
+    try {
+      let scraped: ScrapedJob[] = []
+      if (source.ats === 'greenhouse') scraped = await fetchGreenhouseJobs(source.slug)
+      else if (source.ats === 'ashby') scraped = await fetchAshbyJobs(source.slug)
+      else if (source.ats === 'lever') scraped = await fetchLeverJobs(source.slug)
+
+      for (const job of scraped) {
+        if (!job.title || !job.applyUrl) continue
+        if (isSuspiciousTitle(job.title, source.name)) continue
+
+        const { ok, tags } = isApacOrWorldwide(job.location, job.isRemote)
+        if (!ok) continue
+
+        if (jobExistsInCache(cache, job.applyUrl, job.title, source.name)) continue
+
+        const categoryId = getCategoryIdFromCache(cache, mapCategory(job.department))
+        const companyId = await getOrCreateCompany(cache, source.name)
+        if (!companyId) continue
+
+        const { error } = await getSupabase().from('jobs').insert({
+          title: job.title,
+          slug: uniqueSlug(job.title),
+          company_id: companyId,
+          description: job.description || '',
+          apply_url: job.applyUrl,
+          category_id: categoryId,
+          employment_type: 'full-time',
+          region_tags: tags,
+          salary_currency: 'USD',
+          is_premium: true,
+          is_featured: false,
+          status: 'live',
+          source: source.ats,
+          asia_friendly: true,
+          published_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        })
+        if (!error) {
+          cache.existingUrls.add(job.applyUrl)
+          total++
+        }
+      }
+    } catch {
+      // skip failed company, continue with rest
+    }
+  }
+  return total
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -337,8 +510,12 @@ export async function GET(request: Request) {
 
   try {
     const cache = await loadExistingData()
-    const workingnomads = await fetchWorkingNomads(cache)
-    return NextResponse.json({ ok: true, added: { workingnomads, total: workingnomads } })
+    const [companies, workingnomads] = await Promise.all([
+      fetchCompanyJobs(cache),
+      fetchWorkingNomads(cache),
+    ])
+    const total = companies + workingnomads
+    return NextResponse.json({ ok: true, added: { companies, workingnomads, total } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
