@@ -344,18 +344,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [workingnomads, weworkremotely] = await Promise.all([
-      fetchWorkingNomads(),
-      fetchWeWorkRemotely(),
-    ])
-    const total = workingnomads + weworkremotely
-    return NextResponse.json({ ok: true, added: { workingnomads, weworkremotely, total } })
+    const workingnomads = await fetchWorkingNomads()
+    return NextResponse.json({ ok: true, added: { workingnomads, total: workingnomads } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
 }
 
-async function fetchWeWorkRemotely(): Promise<number> {
+// WWR removed — links go to WWR site not employer career pages
+async function fetchWeWorkRemotely_disabled(): Promise<number> {
   const res = await fetch('https://weworkremotely.com/remote-jobs.rss', {
     headers: { 'User-Agent': 'MangoRemote/1.0 (hello@mangoremote.com)' },
   })
