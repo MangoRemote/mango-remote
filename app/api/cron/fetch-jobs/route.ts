@@ -344,9 +344,71 @@ export async function GET(request: Request) {
   }
 
   try {
-    const workingnomads = await fetchWorkingNomads()
-    return NextResponse.json({ ok: true, added: { workingnomads, total: workingnomads } })
+    const [workingnomads, weworkremotely] = await Promise.all([
+      fetchWorkingNomads(),
+      fetchWeWorkRemotely(),
+    ])
+    const total = workingnomads + weworkremotely
+    return NextResponse.json({ ok: true, added: { workingnomads, weworkremotely, total } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
+}
+
+async function fetchWeWorkRemotely(): Promise<number> {
+  const res = await fetch('https://weworkremotely.com/remote-jobs.rss', {
+    headers: { 'User-Agent': 'MangoRemote/1.0 (hello@mangoremote.com)' },
+  })
+  if (!res.ok) return 0
+
+  const xml = await res.text()
+  const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || []
+  let count = 0
+
+  for (const item of items) {
+    const title = (item.match(/<title>(.*?)<\/title>/) || [])[1]?.replace(/^[^:]+:\s*/, '').trim()
+    const link = (item.match(/<guid>(.*?)<\/guid>/) || [])[1]?.trim()
+    const region = (item.match(/<region>(.*?)<\/region>/) || [])[1] || ''
+    const country = (item.match(/<country>(.*?)<\/country>/) || [])[1] || ''
+    const category = (item.match(/<category>(.*?)<\/category>/) || [])[1] || ''
+    const description = (item.match(/<description>([\s\S]*?)<\/description>/) || [])[1] || ''
+    const company = (item.match(/<company_name>(.*?)<\/company_name>/) || // some feeds have this
+      item.match(/Headquarters:\s*<\/strong>\s*(.*?)<br/) || [])[1]?.trim() ||
+      (title?.split(':')[0] || 'Unknown')
+
+    if (!title || !link) continue
+    if (!region.includes('Anywhere')) continue  // only truly worldwide jobs
+    // Skip if explicitly US/Canada/UK only
+    if (/\b(United States|Canada)\b/.test(country) && !/worldwide|anywhere/i.test(country)) continue
+    if (isSuspiciousTitle(title)) continue
+
+    const cleanDesc = description.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim()
+    if (!isValidDescription(cleanDesc)) continue
+    if (await jobExists(link, title, company)) continue
+
+    const categoryId = await getCategoryId(WN_CATEGORY_MAP[category.toLowerCase()] || 'Operations')
+    const companyId = await getOrCreateCompany(company)
+    if (!companyId) continue
+
+    await getSupabase().from('jobs').insert({
+      title,
+      slug: uniqueSlug(title),
+      company_id: companyId,
+      description: cleanDesc,
+      apply_url: link,
+      category_id: categoryId,
+      employment_type: 'full-time',
+      region_tags: ['Worldwide'],
+      salary_currency: 'USD',
+      is_premium: true,
+      is_featured: false,
+      status: 'live',
+      source: 'weworkremotely',
+      asia_friendly: true,
+      published_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    count++
+  }
+  return count
 }
