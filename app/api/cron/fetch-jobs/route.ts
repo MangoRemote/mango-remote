@@ -61,6 +61,20 @@ const WN_CATEGORY_MAP: Record<string, string> = {
   'consulting': 'Operations',
 }
 
+// Non-Asia location keywords that disqualify a job if found in the title
+const NON_ASIA_TITLE_PATTERNS = [
+  /\b(emea|latam|dach|mena|apac(?!.*apac))\b/i, // region codes (APAC is ok but only if it's the focus)
+  /\b(poland|germany|france|spain|italy|netherlands|sweden|norway|denmark|finland|belgium|austria|switzerland|ireland|portugal|czech|romania|hungary|ukraine)\b/i,
+  /\b(brazil|mexico|argentina|colombia|chile)\b/i,
+  /\b(washington dc|new york|san francisco|london|berlin|amsterdam|paris|madrid|toronto|sydney|melbourne)\b/i,
+  /\bcarahsoft\b/i, // US gov contractor
+  /\(EMEA\)/i, /\(US\)/i, /\(UK\)/i, /\(EU\)/i,
+]
+
+function titleHasNonAsiaLocation(title: string): boolean {
+  return NON_ASIA_TITLE_PATTERNS.some(p => p.test(title))
+}
+
 const JUNK_TITLE_PATTERNS = [
   // Physical / on-site jobs
   /\b(labourer|laborer|barista|driver|porter|cleaner|cashier|chef|cook|waiter|waitress|bartender|security guard|janitor|plumber|electrician|carpenter|assembler|warehouse|delivery|forklift|machinist|welder|painter|hvac|mechanic)\b/i,
@@ -474,6 +488,7 @@ async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
     for (const job of jobs) {
       if (!job.title || !job.applyUrl) continue
       if (isSuspiciousTitle(job.title, source.name)) continue
+      if (titleHasNonAsiaLocation(job.title)) continue
       const { ok, tags } = isApacOrWorldwide(job.location, job.isRemote)
       if (!ok) continue
       if (jobExistsInCache(cache, job.applyUrl, job.title, source.name)) continue

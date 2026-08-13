@@ -105,7 +105,7 @@ export default async function JobsPage({ searchParams }: Props) {
 
   const savedIds = new Set((savedData || []).map((r: { job_id: string }) => r.job_id))
   const allJobs = (jobs || []) as Job[]
-  const FREE_LIMIT = 5
+  const FREE_LIMIT = Math.ceil(allJobs.length / 2)
   const freeJobs = allJobs.slice(0, FREE_LIMIT)
   const premiumJobs = allJobs.slice(FREE_LIMIT)
 
