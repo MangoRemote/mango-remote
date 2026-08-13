@@ -450,53 +450,53 @@ async function fetchLeverJobs(slug: string): Promise<ScrapedJob[]> {
 }
 
 async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
+  // Fetch all company APIs in parallel
+  const results = await Promise.all(
+    COMPANY_SOURCES.map(async (source) => {
+      try {
+        if (source.ats === 'greenhouse') return { source, jobs: await fetchGreenhouseJobs(source.slug) }
+        if (source.ats === 'ashby') return { source, jobs: await fetchAshbyJobs(source.slug) }
+        if (source.ats === 'lever') return { source, jobs: await fetchLeverJobs(source.slug) }
+      } catch { /* skip */ }
+      return { source, jobs: [] as ScrapedJob[] }
+    })
+  )
+
   let total = 0
+  for (const { source, jobs } of results) {
+    for (const job of jobs) {
+      if (!job.title || !job.applyUrl) continue
+      if (isSuspiciousTitle(job.title, source.name)) continue
+      const { ok, tags } = isApacOrWorldwide(job.location, job.isRemote)
+      if (!ok) continue
+      if (jobExistsInCache(cache, job.applyUrl, job.title, source.name)) continue
 
-  for (const source of COMPANY_SOURCES) {
-    try {
-      let scraped: ScrapedJob[] = []
-      if (source.ats === 'greenhouse') scraped = await fetchGreenhouseJobs(source.slug)
-      else if (source.ats === 'ashby') scraped = await fetchAshbyJobs(source.slug)
-      else if (source.ats === 'lever') scraped = await fetchLeverJobs(source.slug)
+      const categoryId = getCategoryIdFromCache(cache, mapCategory(job.department))
+      const companyId = await getOrCreateCompany(cache, source.name)
+      if (!companyId) continue
 
-      for (const job of scraped) {
-        if (!job.title || !job.applyUrl) continue
-        if (isSuspiciousTitle(job.title, source.name)) continue
-
-        const { ok, tags } = isApacOrWorldwide(job.location, job.isRemote)
-        if (!ok) continue
-
-        if (jobExistsInCache(cache, job.applyUrl, job.title, source.name)) continue
-
-        const categoryId = getCategoryIdFromCache(cache, mapCategory(job.department))
-        const companyId = await getOrCreateCompany(cache, source.name)
-        if (!companyId) continue
-
-        const { error } = await getSupabase().from('jobs').insert({
-          title: job.title,
-          slug: uniqueSlug(job.title),
-          company_id: companyId,
-          description: job.description || '',
-          apply_url: job.applyUrl,
-          category_id: categoryId,
-          employment_type: 'full-time',
-          region_tags: tags,
-          salary_currency: 'USD',
-          is_premium: true,
-          is_featured: false,
-          status: 'live',
-          source: source.ats,
-          asia_friendly: true,
-          published_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        })
-        if (!error) {
-          cache.existingUrls.add(job.applyUrl)
-          total++
-        }
+      const { error } = await getSupabase().from('jobs').insert({
+        title: job.title,
+        slug: uniqueSlug(job.title),
+        company_id: companyId,
+        description: job.description || '',
+        apply_url: job.applyUrl,
+        category_id: categoryId,
+        employment_type: 'full-time',
+        region_tags: tags,
+        salary_currency: 'USD',
+        is_premium: true,
+        is_featured: false,
+        status: 'live',
+        source: source.ats,
+        asia_friendly: true,
+        published_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      if (!error) {
+        cache.existingUrls.add(job.applyUrl)
+        total++
       }
-    } catch {
-      // skip failed company, continue with rest
     }
   }
   return total
