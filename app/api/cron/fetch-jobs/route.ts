@@ -164,6 +164,21 @@ const ASIAN_COUNTRY_MAP: [RegExp, string][] = [
 // General Asia/APAC keywords
 const APAC_KEYWORDS = ['asia', 'apac', 'southeast asia', 'east asia', 'asia pacific', 'asia-pacific']
 
+const AGGREGATOR_DOMAINS = ['weworkremotely.com', 'remoteok.com', 'remotive.com', 'linkedin.com/jobs']
+
+async function resolvesFinalUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(4000) })
+    return res.url
+  } catch {
+    return null
+  }
+}
+
+function isAggregatorUrl(url: string): boolean {
+  return AGGREGATOR_DOMAINS.some(d => url.includes(d))
+}
+
 // Locations that mean the job is NOT suitable for this site
 const EXCLUDE_LOCATION_PATTERNS = [
   /^australia$/i, /^canada$/i, /^usa$/i, /^united states$/i,
@@ -266,13 +281,22 @@ async function fetchWorkingNomads(cache: ExistingData): Promise<number> {
     tagged.push({ job, regionTags: apacUrls.has(job.url) ? ['APAC'] : ['Worldwide'] })
   }
 
+  // Pre-filter: resolve all WN redirect URLs in parallel to catch aggregator destinations
+  const withResolvedUrls = await Promise.all(
+    tagged.map(async ({ job, regionTags }) => {
+      const finalUrl = await resolvesFinalUrl(job.url)
+      return { job, regionTags, finalUrl }
+    })
+  )
+
   let count = 0
 
-  for (const { job, regionTags } of tagged) {
+  for (const { job, regionTags, finalUrl } of withResolvedUrls) {
     if (!job.url || !job.company_name || !job.title) continue
+    if (!finalUrl || isAggregatorUrl(finalUrl)) continue
     if (isSuspiciousTitle(job.title, job.company_name)) continue
     if (!isValidDescription(job.description)) continue
-    if (jobExistsInCache(cache, job.url, job.title, job.company_name)) continue
+    if (jobExistsInCache(cache, finalUrl, job.title, job.company_name)) continue
 
     const categoryName = WN_CATEGORY_MAP[(job.category_name || '').toLowerCase().trim()] || 'Operations'
     const categoryId = getCategoryIdFromCache(cache, categoryName)
@@ -284,7 +308,7 @@ async function fetchWorkingNomads(cache: ExistingData): Promise<number> {
       slug: uniqueSlug(job.title),
       company_id: companyId,
       description: job.description || '',
-      apply_url: job.url,
+      apply_url: finalUrl,
       category_id: categoryId,
       employment_type: 'full-time',
       region_tags: regionTags,
@@ -298,7 +322,7 @@ async function fetchWorkingNomads(cache: ExistingData): Promise<number> {
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
     if (!error) {
-      cache.existingUrls.add(job.url)
+      cache.existingUrls.add(finalUrl)
       count++
     }
   }
