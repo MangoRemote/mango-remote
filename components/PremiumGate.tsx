@@ -14,7 +14,7 @@ export default function PremiumGate({ count, hasSearch }: Props) {
           <strong>
             {count} more {count === 1 ? 'job' : 'jobs'}{hasSearch ? ' matching your search' : ''} — Premium only
           </strong>
-          <p>Free members see 5 jobs. Upgrade to unlock the full board and apply first.</p>
+          <p>You're seeing half the jobs. Upgrade to unlock every role and apply first.</p>
         </div>
         <Link href="/premium" className="premium-gate-btn">
           Unlock all jobs →
