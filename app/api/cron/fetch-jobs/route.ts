@@ -199,84 +199,51 @@ function getRegionTags(location: string): string[] | null {
   return ['Worldwide']
 }
 
-async function getCategoryId(name: string): Promise<string | null> {
-  const { data } = await getSupabase().from('categories').select('id').ilike('name', name).single()
-  return data?.id ?? null
+// Load all existing data in 3 parallel queries instead of per-job lookups
+async function loadExistingData() {
+  const [jobsRes, companiesRes, categoriesRes] = await Promise.all([
+    getSupabase().from('jobs').select('apply_url, title, company_id'),
+    getSupabase().from('companies').select('id, name'),
+    getSupabase().from('categories').select('id, name'),
+  ])
+  const existingUrls = new Set((jobsRes.data || []).map((j: { apply_url: string }) => j.apply_url))
+  const existingTitles = new Map(
+    (jobsRes.data || []).map((j: { title: string; company_id: string }) => [j.title.toLowerCase(), j.company_id])
+  )
+  const companyMap = new Map((companiesRes.data || []).map((c: { name: string; id: string }) => [c.name.toLowerCase(), c.id]))
+  const categoryMap = new Map((categoriesRes.data || []).map((c: { name: string; id: string }) => [c.name.toLowerCase(), c.id]))
+  return { existingUrls, existingTitles, companyMap, categoryMap }
 }
 
-async function getOrCreateCompany(name: string, website?: string, logoUrl?: string): Promise<string | null> {
-  const { data: existing } = await getSupabase().from('companies').select('id').eq('name', name).single()
-  if (existing) return existing.id
+type ExistingData = Awaited<ReturnType<typeof loadExistingData>>
+
+function jobExistsInCache(cache: ExistingData, applyUrl: string, title?: string, companyName?: string): boolean {
+  if (cache.existingUrls.has(applyUrl)) return true
+  if (title && companyName) {
+    const companyId = cache.existingTitles.get(title.toLowerCase())
+    if (companyId && cache.companyMap.get(companyName.toLowerCase()) === companyId) return true
+  }
+  return false
+}
+
+function getCategoryIdFromCache(cache: ExistingData, name: string): string | null {
+  return cache.categoryMap.get(name.toLowerCase()) ?? cache.categoryMap.get('operations') ?? null
+}
+
+async function getOrCreateCompany(cache: ExistingData, name: string, website?: string, logoUrl?: string): Promise<string | null> {
+  const existing = cache.companyMap.get(name.toLowerCase())
+  if (existing) return existing
   const slug = slugify(name)
   const { data } = await getSupabase()
     .from('companies')
     .insert({ name, slug, website: website || null, logo_url: logoUrl || null, verified: false })
     .select('id')
     .single()
+  if (data?.id) cache.companyMap.set(name.toLowerCase(), data.id)
   return data?.id ?? null
 }
 
-async function jobExists(applyUrl: string, title?: string, companyName?: string): Promise<boolean> {
-  const { data: byUrl } = await getSupabase().from('jobs').select('id').eq('apply_url', applyUrl).maybeSingle()
-  if (byUrl) return true
-  if (title && companyName) {
-    const { data: byTitle } = await getSupabase()
-      .from('jobs')
-      .select('id, company:companies(name)')
-      .ilike('title', title)
-      .limit(1)
-    const match = byTitle?.[0]
-    const co = match?.company as unknown as { name: string } | null
-    if (co?.name === companyName) return true
-  }
-  return false
-}
-
-async function fetchRemotive(): Promise<number> {
-  const res = await fetch('https://remotive.com/api/remote-jobs?limit=200')
-  if (!res.ok) return 0
-  const { jobs } = await res.json()
-  let count = 0
-
-  for (const job of jobs) {
-    if (isSuspiciousTitle(job.title, job.company_name)) continue
-    if (!isValidDescription(job.description)) continue
-    if (await jobExists(job.url, job.title, job.company_name)) continue
-
-    const regionTags = getRegionTags(job.candidate_required_location || '')
-    if (!regionTags) continue
-
-    const categoryName = REMOTIVE_CATEGORY_MAP[(job.category || '').toLowerCase().trim()] || 'Operations'
-    const categoryId = await getCategoryId(categoryName)
-    const companyId = await getOrCreateCompany(job.company_name, job.company_url, job.company_logo)
-    if (!companyId) continue
-
-    await getSupabase().from('jobs').insert({
-      title: job.title,
-      slug: uniqueSlug(job.title),
-      company_id: companyId,
-      description: job.description,
-      apply_url: job.url,
-      category_id: categoryId,
-      employment_type: job.job_type?.includes('contract') ? 'contract' : 'full-time',
-      region_tags: regionTags,
-      salary_currency: 'USD',
-      is_premium: true,
-      is_featured: false,
-      status: 'live',
-      source: 'remotive',
-      asia_friendly: true,
-      published_at: job.publication_date || new Date().toISOString(),
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    })
-    count++
-  }
-  return count
-}
-
-async function fetchWorkingNomads(): Promise<number> {
-  // Fetch APAC/Asia and Worldwide ("work from anywhere") endpoints separately
-  // so we can tag jobs correctly based on which list they came from.
+async function fetchWorkingNomads(cache: ExistingData): Promise<number> {
   const [resWorldwide, resApac, resAsia] = await Promise.all([
     fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=500&location=worldwide'),
     fetch('https://www.workingnomads.com/api/exposed_jobs/?limit=500&location=apac'),
@@ -287,11 +254,9 @@ async function fetchWorkingNomads(): Promise<number> {
   const apac: { url: string }[] = resApac.ok ? await resApac.json() : []
   const asia: { url: string }[] = resAsia.ok ? await resAsia.json() : []
 
-  // Tag each job by its source endpoint, dedup by URL
   const seen = new Set<string>()
   type TaggedJob = { job: Record<string, string>; regionTags: string[] }
   const tagged: TaggedJob[] = []
-
   const apacUrls = new Set([...apac, ...asia].map((j) => j.url))
 
   for (const j of [...apac, ...asia, ...worldwide]) {
@@ -307,14 +272,14 @@ async function fetchWorkingNomads(): Promise<number> {
     if (!job.url || !job.company_name || !job.title) continue
     if (isSuspiciousTitle(job.title, job.company_name)) continue
     if (!isValidDescription(job.description)) continue
-    if (await jobExists(job.url, job.title, job.company_name)) continue
+    if (jobExistsInCache(cache, job.url, job.title, job.company_name)) continue
 
     const categoryName = WN_CATEGORY_MAP[(job.category_name || '').toLowerCase().trim()] || 'Operations'
-    const categoryId = await getCategoryId(categoryName)
-    const companyId = await getOrCreateCompany(job.company_name, job.company_url || undefined, job.company_logo || undefined)
+    const categoryId = getCategoryIdFromCache(cache, categoryName)
+    const companyId = await getOrCreateCompany(cache, job.company_name, job.company_url || undefined, job.company_logo || undefined)
     if (!companyId) continue
 
-    await getSupabase().from('jobs').insert({
+    const { error } = await getSupabase().from('jobs').insert({
       title: job.title,
       slug: uniqueSlug(job.title),
       company_id: companyId,
@@ -332,7 +297,10 @@ async function fetchWorkingNomads(): Promise<number> {
       published_at: job.pub_date || new Date().toISOString(),
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
-    count++
+    if (!error) {
+      cache.existingUrls.add(job.url)
+      count++
+    }
   }
   return count
 }
@@ -344,7 +312,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const workingnomads = await fetchWorkingNomads()
+    const cache = await loadExistingData()
+    const workingnomads = await fetchWorkingNomads(cache)
     return NextResponse.json({ ok: true, added: { workingnomads, total: workingnomads } })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
@@ -352,7 +321,7 @@ export async function GET(request: Request) {
 }
 
 // WWR removed — links go to WWR site not employer career pages
-async function fetchWeWorkRemotely_disabled(): Promise<number> {
+async function fetchWeWorkRemotely_disabled(cache: ExistingData): Promise<number> {
   const res = await fetch('https://weworkremotely.com/remote-jobs.rss', {
     headers: { 'User-Agent': 'MangoRemote/1.0 (hello@mangoremote.com)' },
   })
@@ -381,10 +350,10 @@ async function fetchWeWorkRemotely_disabled(): Promise<number> {
 
     const cleanDesc = description.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim()
     if (!isValidDescription(cleanDesc)) continue
-    if (await jobExists(link, title, company)) continue
+    if (jobExistsInCache(cache, link, title, company)) continue
 
-    const categoryId = await getCategoryId(WN_CATEGORY_MAP[category.toLowerCase()] || 'Operations')
-    const companyId = await getOrCreateCompany(company)
+    const categoryId = getCategoryIdFromCache(cache, WN_CATEGORY_MAP[category.toLowerCase()] || 'Operations')
+    const companyId = await getOrCreateCompany(cache, company)
     if (!companyId) continue
 
     await getSupabase().from('jobs').insert({
