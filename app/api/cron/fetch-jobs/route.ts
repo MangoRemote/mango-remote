@@ -357,11 +357,13 @@ function mapCategory(raw: string): string {
 
 // Is this job remote and APAC/worldwide compatible?
 function isApacOrWorldwide(location: string, isRemote: boolean): { ok: boolean; tags: string[] } {
-  const l = (location || '').toLowerCase()
+  const l = (location || '').trim()
+  const ll = l.toLowerCase()
 
-  if (!isRemote && !l.includes('remote')) return { ok: false, tags: [] }
+  // Must be remote in some form
+  if (!isRemote && !ll.includes('remote')) return { ok: false, tags: [] }
 
-  // Explicit APAC / Asia countries
+  // Explicit APAC / Asia countries → always include
   const asianCountries: [RegExp, string][] = [
     [/japan/i, 'Japan'], [/vietnam/i, 'Vietnam'], [/thailand/i, 'Thailand'],
     [/indonesia/i, 'Indonesia'], [/philippines/i, 'Philippines'], [/malaysia/i, 'Malaysia'],
@@ -370,24 +372,21 @@ function isApacOrWorldwide(location: string, isRemote: boolean): { ok: boolean; 
     [/cambodia/i, 'Cambodia'], [/myanmar/i, 'Myanmar'], [/sri lanka/i, 'Sri Lanka'],
   ]
   for (const [pat, name] of asianCountries) {
-    if (pat.test(location)) return { ok: true, tags: [name] }
+    if (pat.test(l)) return { ok: true, tags: [name] }
   }
 
-  // General APAC/Asia
-  if (/apac|asia.?pacific|southeast asia|east asia/i.test(location)) return { ok: true, tags: ['APAC'] }
+  // General APAC/Asia region → include
+  if (/apac|asia.?pacific|southeast asia|east asia/i.test(l)) return { ok: true, tags: ['APAC'] }
 
-  // Worldwide / anywhere
-  if (!location || /worldwide|anywhere|global|international|^remote$/i.test(location)) {
+  // Clearly worldwide / no restriction → include
+  if (!l || /^remote$/i.test(l) || /worldwide|anywhere|global|international/i.test(l)) {
     return { ok: true, tags: ['Worldwide'] }
   }
 
-  // Explicitly non-Asia regions — exclude
-  if (/\b(us|usa|united states|canada|uk|united kingdom|australia|new zealand|europe|emea|latam|dach|cet|eet|north america)\b/i.test(location)) {
-    return { ok: false, tags: [] }
-  }
+  // Any specific country or region mentioned → exclude unless it's Asia above
+  // This catches Poland, Germany, France, US, UK, Brazil, etc.
+  if (/[a-z]/i.test(l) && l.length > 3) return { ok: false, tags: [] }
 
-  // Default: if it's marked remote, assume worldwide
-  if (isRemote) return { ok: true, tags: ['Worldwide'] }
   return { ok: false, tags: [] }
 }
 
@@ -406,15 +405,16 @@ async function fetchGreenhouseJobs(slug: string): Promise<ScrapedJob[]> {
   const data = await res.json()
   return (data.jobs || []).map((j: Record<string, unknown>) => {
     const location = (j.location as { name?: string })?.name || ''
+    const description = String(j.content || j.description || '')
     return {
       title: String(j.title || ''),
       applyUrl: `https://boards.greenhouse.io/${slug}/jobs/${j.id}`,
       location,
       isRemote: /remote/i.test(location),
       department: String((j.departments as Array<{ name: string }>)?.[0]?.name || ''),
-      description: String(j.content || ''),
+      description,
     }
-  })
+  }).filter((j: ScrapedJob) => j.description.length > 50)
 }
 
 async function fetchAshbyJobs(slug: string): Promise<ScrapedJob[]> {
@@ -462,8 +462,15 @@ async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
     })
   )
 
-  let total = 0
+  // Build list of new jobs to insert (no DB calls yet)
+  type JobRow = Record<string, unknown>
+  const toInsert: JobRow[] = []
+
   for (const { source, jobs } of results) {
+    // Ensure company exists in cache (one DB call per new company max)
+    const companyId = await getOrCreateCompany(cache, source.name)
+    if (!companyId) continue
+
     for (const job of jobs) {
       if (!job.title || !job.applyUrl) continue
       if (isSuspiciousTitle(job.title, source.name)) continue
@@ -472,10 +479,9 @@ async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
       if (jobExistsInCache(cache, job.applyUrl, job.title, source.name)) continue
 
       const categoryId = getCategoryIdFromCache(cache, mapCategory(job.department))
-      const companyId = await getOrCreateCompany(cache, source.name)
-      if (!companyId) continue
+      cache.existingUrls.add(job.applyUrl) // mark as seen so duplicates across companies are skipped
 
-      const { error } = await getSupabase().from('jobs').insert({
+      toInsert.push({
         title: job.title,
         slug: uniqueSlug(job.title),
         company_id: companyId,
@@ -493,13 +499,14 @@ async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
         published_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       })
-      if (!error) {
-        cache.existingUrls.add(job.applyUrl)
-        total++
-      }
     }
   }
-  return total
+
+  if (toInsert.length === 0) return 0
+
+  // Single batch insert
+  const { error } = await getSupabase().from('jobs').insert(toInsert)
+  return error ? 0 : toInsert.length
 }
 
 export async function GET(request: Request) {
