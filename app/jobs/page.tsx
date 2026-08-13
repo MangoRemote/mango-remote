@@ -6,6 +6,8 @@ import type { Job, Category } from '@/lib/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Remote Jobs — MangoRemote',
   description: 'Browse remote jobs compatible with living in Asia. Every role vetted for timezone compatibility. Filter by country, category, and experience level.',
