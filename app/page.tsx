@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import JobCard from '@/components/JobRow'
 import PremiumGate from '@/components/PremiumGate'
@@ -49,7 +51,7 @@ export default async function HomePage() {
     .order('published_at', { ascending: false })
 
   const allJobs = (jobs || []) as Job[]
-  const FREE_LIMIT = 5
+  const FREE_LIMIT = Math.ceil(allJobs.length / 2)
   const freeJobs = allJobs.slice(0, FREE_LIMIT)
   const premiumJobs = allJobs.slice(FREE_LIMIT)
   const total = count || allJobs.length
