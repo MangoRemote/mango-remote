@@ -601,6 +601,12 @@ a {
   border: 1px solid var(--border);
 }
 
+.tag-level {
+  background: var(--bg);
+  color: var(--muted);
+  border-style: dashed;
+}
+
 .tag-asia {
   background: #fff7ed;
   color: #c2410c;

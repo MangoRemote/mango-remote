@@ -50,6 +50,17 @@ const CATEGORY_COLOURS: Record<string, string> = {
   'Writing':          '#D97706',
 }
 
+function getExperienceLevel(title: string): string | null {
+  const t = title.toLowerCase()
+  if (/\b(vp|vice president|cto|cpo|cfo|coo|chief)\b/.test(t)) return 'Executive'
+  if (/\b(director|head of)\b/.test(t)) return 'Director'
+  if (/\b(manager|lead|principal|staff)\b/.test(t)) return 'Manager'
+  if (/\b(senior|sr\.?|sr )\b/.test(t)) return 'Senior'
+  if (/\b(junior|jr\.?|entry|graduate|intern|trainee|no experience)\b/.test(t)) return 'Entry'
+  if (/\b(mid|intermediate|associate)\b/.test(t)) return 'Mid'
+  return null
+}
+
 function categoryColour(name: string): string {
   return CATEGORY_COLOURS[name] || '#F26419'
 }
@@ -82,6 +93,7 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   const categoryName = job.category?.name || ''
   const rawRegions = (job.region_tags || []).filter(Boolean)
   const jobIsNew = isNew(job.published_at || job.created_at)
+  const experienceLevel = getExperienceLevel(job.title)
 
   const inner = (
     <>
@@ -112,6 +124,7 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
             return <span key={r} className="tag">{icon} {label}</span>
           })}
           {rawRegions.length === 0 && <span className="tag">🌍 Work from Anywhere</span>}
+          {experienceLevel && <span className="tag tag-level">{experienceLevel}</span>}
         </div>
       </div>
 
