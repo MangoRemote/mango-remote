@@ -2248,6 +2248,7 @@ textarea.form-input {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  white-space: nowrap;
 }
 
 .jobs-page-count {
@@ -2277,6 +2278,13 @@ textarea.form-input {
   transition: all 0.15s;
   text-decoration: none;
   white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .sort-link {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
 }
 
 .sort-link:hover {
