@@ -70,15 +70,9 @@ export default function PostAJobPage() {
       <h2 className="post-job-form-heading">Job details</h2>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Company name *</label>
-            <input className="form-input" value={form.company_name} onChange={e => set('company_name', e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Company logo URL</label>
-            <input className="form-input" type="url" value={form.logo_url} onChange={e => set('logo_url', e.target.value)} placeholder="https://..." />
-          </div>
+        <div className="form-group">
+          <label>Company name *</label>
+          <input className="form-input" value={form.company_name} onChange={e => set('company_name', e.target.value)} required />
         </div>
 
         <div className="form-group">
