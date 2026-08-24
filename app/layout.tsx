@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
 import { DM_Sans } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
+
+const GA_ID = 'G-JPVNWCZHD0'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -32,6 +35,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={dmSans.variable}>
       <body>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
         <Nav />
         {children}
         <Footer />
