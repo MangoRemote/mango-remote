@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import JobRow from '@/components/JobRow'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Job } from '@/lib/types'
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -40,6 +42,28 @@ export default async function JobPage({ params }: Props) {
   if (!job) notFound()
 
   const j = job as Job
+
+  if (j.is_premium) {
+    const { data: { user } } = await supabase.auth.getUser()
+    let isPremium = false
+    if (user) {
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('user_id', user.id)
+        .single()
+      isPremium = sub?.plan === 'premium' && sub?.status === 'active'
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (userData?.role === 'admin') isPremium = true
+    }
+    if (!isPremium) redirect(`/premium?from=${slug}`)
+  }
+
   const company = Array.isArray(j.company) ? j.company[0] : j.company
   const category = Array.isArray(j.category) ? j.category[0] : j.category
 
