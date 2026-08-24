@@ -44,7 +44,7 @@ export default function AboutPage() {
             Proud to say this is the first dedicated remote job board for people who actually want to live in Asia.
           </p>
           <p className="about-sign">
-            — The MangoRemote Team
+            — Founder, MangoRemote
           </p>
 
           <div style={{ marginTop: 12, fontSize: 14, color: 'var(--text-muted)' }}>
