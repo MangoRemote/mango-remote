@@ -141,7 +141,25 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   )
 
   if (locked) {
-    return <div className="job-card locked" aria-hidden="true">{inner}</div>
+    return (
+      <div className="job-card locked" aria-hidden="true">
+        <div className="company-avatar locked-avatar" />
+        <div className="job-card-body">
+          <div className="job-card-top">
+            <span className="job-title locked-blank">Premium job</span>
+          </div>
+          <div className="job-card-meta">
+            <span className="job-company locked-blank">Hidden company</span>
+          </div>
+          <div className="job-card-bottom">
+            {categoryName && <span className="tag">{categoryName}</span>}
+          </div>
+        </div>
+        <div className="job-card-right">
+          <span className="locked-icon">🔒</span>
+        </div>
+      </div>
+    )
   }
 
   return (
