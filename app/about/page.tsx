@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About — MangoRemote',
-  description: 'MangoRemote is built by Sidney George, a British expat living in Asia.',
+  description: 'MangoRemote is the first remote job board built specifically for people who want to live in Asia.',
 }
 
 export default function AboutPage() {
@@ -20,16 +20,13 @@ export default function AboutPage() {
       <div className="about-body">
         <div className="about-text" style={{ maxWidth: 640 }}>
           <p>
-            In 2022 I was on my way to Australia. I stopped off in Thailand — I'd been in 2011 and had fond memories. It was supposed to be a quick visit.
+            In 2022 I was on my way to Australia. I stopped off in Asia — it was supposed to be a quick visit.
           </p>
           <p>
-            I binned off Australia.
+            I never made it to Australia.
           </p>
           <p>
-            What do most foreigners do when they end up staying in Thailand? They teach. So I became a teacher. The students were great. But it wasn't for me — I knew pretty fast.
-          </p>
-          <p>
-            What I kept noticing was other foreigners living a completely different life. Sitting in nice cafes while I was at work. Going for a morning run. Showing up on islands I'd visit at the weekend. All of them on their laptops, earning money, going wherever they wanted. That's when remote work clicked for me.
+            What I kept noticing was other foreigners living a completely different life. Sitting in nice cafes in the morning. Going for a run at noon. Showing up on islands at the weekend. All of them on their laptops, earning money, going wherever they wanted. That's when remote work clicked for me.
           </p>
           <p>
             Since then I've been properly obsessed. The idea that you can earn real money from anywhere in the world — I still find it mental that more people aren't doing it.
@@ -47,7 +44,7 @@ export default function AboutPage() {
             Proud to say this is the first dedicated remote job board for people who actually want to live in Asia.
           </p>
           <p className="about-sign">
-            — Sidney George, Founder
+            — The MangoRemote Team
           </p>
 
           <div style={{ marginTop: 12, fontSize: 14, color: 'var(--text-muted)' }}>
