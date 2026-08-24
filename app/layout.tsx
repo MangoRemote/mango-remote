@@ -1,7 +1,22 @@
 import type { Metadata } from 'next'
+import { Syne, DM_Sans } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
+
+const syne = Syne({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-syne',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'MangoRemote — Remote jobs that let you live in Asia',
@@ -22,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
       <body>
         <Nav />
         {children}
