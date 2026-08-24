@@ -1808,22 +1808,72 @@ a {
 
 /* ─── Post a job ─── */
 .post-page {
+  padding-bottom: 64px;
+}
+
+.post-page .premium-hero h1 {
+  font-size: 32px;
+}
+
+.post-job-pricing-card {
+  max-width: 480px;
+  margin: -40px auto 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 2;
+}
+
+.post-job-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.post-job-price {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.post-job-price span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.post-job-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post-job-features li {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.post-job-form-heading {
+  max-width: 620px;
+  margin: 48px auto 20px;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.post-page form {
   max-width: 620px;
   margin: 0 auto;
-  padding: 48px 24px;
-}
-
-.post-page h1 {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  margin-bottom: 6px;
-}
-
-.post-page > p {
-  font-size: 13.5px;
-  color: var(--muted);
-  margin-bottom: 32px;
+  padding: 0 24px;
 }
 
 .form-row {

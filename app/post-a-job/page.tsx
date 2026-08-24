@@ -45,8 +45,28 @@ export default function PostAJobPage() {
 
   return (
     <div className="post-page">
-      <h1>Post a Job</h1>
-      <p>Reach remote workers ready to live in Asia. Your listing goes live after review — usually within 24 hours. One-off payment of £99.</p>
+      <div className="premium-hero">
+        <span className="premium-eyebrow">Post a Job</span>
+        <h1>Hire remote talent that already lives in Asia.</h1>
+        <p>Reach thousands of remote professionals actively looking for Work from Anywhere and APAC roles.</p>
+      </div>
+
+      <div className="post-job-pricing-card">
+        <div className="post-job-price-row">
+          <div>
+            <div className="post-job-price">$99<span>one-off</span></div>
+            <div className="premium-plan-note">Listing goes live after review — usually within 24 hours</div>
+          </div>
+        </div>
+        <ul className="post-job-features">
+          <li>✓ Job live for 30 days</li>
+          <li>✓ Seen by remote professionals targeting Asia specifically</li>
+          <li>✓ Listed directly — no aggregator middlemen</li>
+          <li>✓ Shown to both free and premium members</li>
+        </ul>
+      </div>
+
+      <h2 className="post-job-form-heading">Job details</h2>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div className="form-row">
@@ -122,7 +142,7 @@ export default function PostAJobPage() {
         {error && <p className="form-error">{error}</p>}
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>£99 one-off — listing goes live after review</span>
+          <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>$99 one-off — listing goes live after review</span>
           <button type="submit" className="btn-primary" style={{ padding: '10px 24px', fontSize: 14.5 }} disabled={loading}>
             {loading ? 'Redirecting...' : 'Continue to payment →'}
           </button>
