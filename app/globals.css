@@ -1965,6 +1965,68 @@ a {
   .post-job-pricing-card { margin: -60px 16px 0; padding: 26px 24px; }
 }
 
+.post-job-why {
+  background: #FAFBFC;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 56px 24px;
+  margin-top: 56px;
+}
+
+.post-job-why-inner {
+  max-width: 780px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.post-job-why h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin: 10px 0 32px;
+}
+
+.post-job-why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  text-align: left;
+}
+
+.post-job-why-item {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-job-why-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.post-job-why-item strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.post-job-why-item p {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .post-job-why-grid { grid-template-columns: 1fr; }
+}
+
 .post-job-signin-prompt {
   max-width: 480px;
   margin: 48px auto 0;
