@@ -45,9 +45,9 @@ export default function PostAJobPage() {
 
   return (
     <div className="post-page">
-      <div className="premium-hero">
-        <span className="premium-eyebrow">Post a Job</span>
-        <h1>Hire remote talent that already lives in Asia.</h1>
+      <div className="post-job-hero">
+        <span className="post-job-eyebrow">Post a Job</span>
+        <h1>Hire remote talent that<br /><em>already lives in Asia.</em></h1>
         <p>Reach thousands of remote professionals actively looking for Work from Anywhere and APAC roles.</p>
       </div>
 
@@ -57,12 +57,13 @@ export default function PostAJobPage() {
             <div className="post-job-price">$99<span>one-off</span></div>
             <div className="premium-plan-note">Listing goes live after review — usually within 24 hours</div>
           </div>
+          <div className="post-job-badge">30 days live</div>
         </div>
         <ul className="post-job-features">
-          <li>✓ Job live for 30 days</li>
-          <li>✓ Seen by remote professionals targeting Asia specifically</li>
-          <li>✓ Listed directly — no aggregator middlemen</li>
-          <li>✓ Shown to both free and premium members</li>
+          <li><span className="post-job-check">✓</span> Job live for 30 days</li>
+          <li><span className="post-job-check">✓</span> Seen by remote professionals targeting Asia specifically</li>
+          <li><span className="post-job-check">✓</span> Listed directly — no aggregator middlemen</li>
+          <li><span className="post-job-check">✓</span> Shown to both free and premium members</li>
         </ul>
       </div>
 

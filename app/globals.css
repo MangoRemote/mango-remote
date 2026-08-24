@@ -1811,18 +1811,67 @@ a {
   padding-bottom: 64px;
 }
 
-.post-page .premium-hero h1 {
-  font-size: 32px;
+.post-job-hero {
+  background: url('/hero-a.jpg') center top / cover no-repeat;
+  padding: 90px 28px 130px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.post-job-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.35) 100%);
+  pointer-events: none;
+}
+
+.post-job-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.post-job-eyebrow {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.post-job-hero h1 {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+  color: #fff;
+  margin-bottom: 14px;
+  text-wrap: balance;
+}
+
+.post-job-hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.post-job-hero p {
+  font-size: 15.5px;
+  color: rgba(255,255,255,0.75);
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 .post-job-pricing-card {
   max-width: 480px;
-  margin: -40px auto 0;
+  margin: -74px auto 0;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 28px 32px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 32px 36px;
+  box-shadow: 0 20px 40px -8px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.06);
   position: relative;
   z-index: 2;
 }
@@ -1831,21 +1880,35 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
 }
 
 .post-job-price {
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
 }
 
 .post-job-price span {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--muted);
   margin-left: 6px;
+}
+
+.post-job-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: #fff7ed;
+  border: 1px solid #ffe4cc;
+  padding: 5px 11px;
+  border-radius: 20px;
+  white-space: nowrap;
+  margin-top: 2px;
 }
 
 .post-job-features {
@@ -1854,26 +1917,52 @@ a {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 13px;
 }
 
 .post-job-features li {
   font-size: 14px;
   color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.post-job-check {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
 }
 
 .post-job-form-heading {
-  max-width: 620px;
-  margin: 48px auto 20px;
+  max-width: 560px;
+  margin: 56px auto 20px;
   padding: 0 24px;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
 }
 
 .post-page form {
-  max-width: 620px;
+  max-width: 560px;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+@media (max-width: 600px) {
+  .post-job-hero { padding: 64px 20px 100px; }
+  .post-job-hero h1 { font-size: 28px; }
+  .post-job-pricing-card { margin: -60px 16px 0; padding: 26px 24px; }
 }
 
 .form-row {
