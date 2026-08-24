@@ -152,6 +152,11 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
             <span className="job-company locked-blank">Hidden company</span>
           </div>
           <div className="job-card-bottom">
+            {rawRegions.map(r => {
+              const { icon, label } = regionLabel(r)
+              return <span key={r} className="tag">{icon} {label}</span>
+            })}
+            {rawRegions.length === 0 && <span className="tag">🌍 Work from Anywhere</span>}
             {categoryName && <span className="tag">{categoryName}</span>}
           </div>
         </div>
