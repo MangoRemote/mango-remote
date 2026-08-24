@@ -1965,6 +1965,32 @@ a {
   .post-job-pricing-card { margin: -60px 16px 0; padding: 26px 24px; }
 }
 
+.post-job-signin-prompt {
+  max-width: 480px;
+  margin: 48px auto 0;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.post-job-signin-prompt h2 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+}
+
+.post-job-signin-prompt p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+.post-job-signin-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
