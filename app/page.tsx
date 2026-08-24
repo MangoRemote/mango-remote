@@ -51,9 +51,8 @@ export default async function HomePage() {
     .order('published_at', { ascending: false })
 
   const allJobs = (jobs || []) as Job[]
-  const FREE_LIMIT = Math.ceil(allJobs.length / 2)
-  const freeJobs = allJobs.slice(0, FREE_LIMIT)
-  const premiumJobs = allJobs.slice(FREE_LIMIT)
+  const freeJobs = allJobs.filter(j => !j.is_premium)
+  const premiumJobs = allJobs.filter(j => j.is_premium)
   const total = count || allJobs.length
 
   return (

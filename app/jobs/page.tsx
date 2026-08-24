@@ -107,9 +107,8 @@ export default async function JobsPage({ searchParams }: Props) {
 
   const savedIds = new Set((savedData || []).map((r: { job_id: string }) => r.job_id))
   const allJobs = (jobs || []) as Job[]
-  const FREE_LIMIT = Math.ceil(allJobs.length / 2)
-  const freeJobs = allJobs.slice(0, FREE_LIMIT)
-  const premiumJobs = allJobs.slice(FREE_LIMIT)
+  const freeJobs = allJobs.filter(j => !j.is_premium)
+  const premiumJobs = allJobs.filter(j => j.is_premium)
 
   const hasFilters = !!(params.q || params.category || params.type || params.asia || params.country || params.level || params.posted)
 
