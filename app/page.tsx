@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import JobCard from '@/components/JobRow'
 import PremiumGate from '@/components/PremiumGate'
@@ -14,7 +12,8 @@ export const metadata: Metadata = {
   description: 'Find remote jobs compatible with living in Thailand, Japan, Vietnam, and across Asia. Every role vetted for timezone flexibility.',
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 const CATEGORIES = [
   'All Jobs', 'Engineering', 'Design', 'Marketing', 'Sales',
@@ -45,7 +44,7 @@ export default async function HomePage() {
 
   const { data: jobs, count } = await supabase
     .from('jobs')
-    .select('*, company:companies(*), category:categories(*)', { count: 'exact' })
+    .select('*, company:companies(id,name,slug,logo_url), category:categories(id,name)', { count: 'exact' })
     .eq('status', 'live')
     .order('is_featured', { ascending: false })
     .order('published_at', { ascending: false })

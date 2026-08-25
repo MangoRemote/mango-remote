@@ -525,22 +525,8 @@ async function fetchCompanyJobs(cache: ExistingData): Promise<number> {
 }
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  try {
-    const cache = await loadExistingData()
-    const [companies, workingnomads] = await Promise.all([
-      fetchCompanyJobs(cache),
-      fetchWorkingNomads(cache),
-    ])
-    const total = companies + workingnomads
-    return NextResponse.json({ ok: true, added: { companies, workingnomads, total } })
-  } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
-  }
+  // DISABLED: Manual job curation only. Jobs added via direct database inserts.
+  return NextResponse.json({ ok: false, message: 'Automated job fetching disabled — using manual curation only' }, { status: 200 })
 }
 
 // WWR removed — links go to WWR site not employer career pages
