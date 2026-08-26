@@ -20,35 +20,29 @@ export default function AboutPage() {
       <div className="about-body">
         <div className="about-text" style={{ maxWidth: 640 }}>
           <p>
-            In 2022 I was on my way to Australia. I stopped off in Asia — it was supposed to be a quick visit.
+            In 2022, on my way to Australia, I stopped off in Asia, which was supposed to be a quick visit. All these years later and I never left.
           </p>
           <p>
-            I never made it to Australia.
+            After initially taking up work as a teacher, I kept seeing other foreigners living a completely different life. Sitting in nice cafes in the morning, going for a run midday, maybe even spending time at an island, whereas I'm still slogging it in a suit, just this time in 35 degrees (which I don't recommend). I'd picked up my life in London and started it in Asia, great for the most part, but it still wasn't the full vision of how I thought my life would go.
           </p>
           <p>
-            What I kept noticing was other foreigners living a completely different life. Sitting in nice cafes in the morning. Going for a run at noon. Showing up on islands at the weekend. All of them on their laptops, earning money, going wherever they wanted. That's when remote work clicked for me.
+            Since then, I've been obsessed. The idea that you can earn money from anywhere in the world from a computer.
           </p>
           <p>
-            Since then I've been properly obsessed. The idea that you can earn real money from anywhere in the world — I still find it mental that more people aren't doing it.
-          </p>
-          <p>
-            After a load of remote jobs, online businesses, failures and wins, I built the <strong>Remote Capital Club</strong> — one of the biggest remote work communities on Skool — and <strong>Remote Job Today</strong>, which has helped over 100 people land remote work so far.
+            After many failures and wins, figuring myself out, I built Remote Capital Club — one of the biggest remote work communities on Skool — then Remote Job Today, a dedicated remote site for entry-level to mid-level.
           </p>
           <p>
             But there was always something missing. A job board that actually filters for Asia. Not just "remote" — because we all know that usually means remote from their office in London. I mean jobs where you can genuinely be sitting in Bangkok, Chiang Mai, Bali, Ho Chi Minh City, and it's fine.
           </p>
           <p>
-            That's MangoRemote. And the name? I will die on this hill — mangoes are the greatest fruit on earth, they're everywhere in Asia, and Asia is the best continent in the world. Simple.
+            Welcome to MangoRemote. Why mango? The point of this is so you get a job and you're never more than 5 minutes from a mango smoothie, whether that's on the beach, in your Asian city overlooking the skyline, or working away at a local cafe.
           </p>
           <p>
-            Proud to say this is the first dedicated remote job board for people who actually want to live in Asia.
-          </p>
-          <p className="about-sign">
-            — Founder, MangoRemote
+            This is the first Asia-dedicated remote job board.
           </p>
 
           <div style={{ marginTop: 12, fontSize: 14, color: 'var(--text-muted)' }}>
-            Questions? <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a>
+            If you spot any issues or have questions, email <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a>
           </div>
         </div>
       </div>
