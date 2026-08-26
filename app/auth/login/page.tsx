@@ -42,7 +42,12 @@ function LoginForm() {
         password,
         options: { emailRedirectTo: `${window.location.origin}${next}` },
       })
-      if (error) { setError(error.message); setLoading(false); return }
+      if (error) {
+        console.error('Signup error:', error)
+        setError(error.message || error.toString() || 'Signup failed. Please try again.')
+        setLoading(false)
+        return
+      }
       if (data.session) {
         router.push(next)
         router.refresh()
