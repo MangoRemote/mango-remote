@@ -903,11 +903,7 @@ a {
 }
 
 .about-body {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 48px;
   margin-bottom: 48px;
-  align-items: start;
 }
 
 .about-text {
