@@ -44,7 +44,8 @@ function LoginForm() {
       })
       if (error) {
         console.error('Signup error:', error)
-        setError(error.message || error.toString() || 'Signup failed. Please try again.')
+        const errorMsg = error?.message || (error && typeof error === 'object' ? JSON.stringify(error) : 'Email already exists or invalid password (min 8 characters)')
+        setError(errorMsg)
         setLoading(false)
         return
       }
