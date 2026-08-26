@@ -9,12 +9,15 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main className="about-page">
-      <div className="about-hero">
-        <span className="about-eyebrow">Our story</span>
-        <h1>I stopped off in Thailand. Never left.</h1>
-        <p>
-          MangoRemote exists because I spent years looking for something like this and it didn't exist.
-        </p>
+      <div className="about-hero-image">
+        <img src="/about-hero.jpg" alt="Asia skyline" />
+        <div className="about-hero-overlay">
+          <span className="about-eyebrow">Our story</span>
+          <h1>I stopped off in Thailand. Never left.</h1>
+          <p>
+            MangoRemote exists because I spent years looking for something like this and it didn't exist.
+          </p>
+        </div>
       </div>
 
       <div className="about-body">
