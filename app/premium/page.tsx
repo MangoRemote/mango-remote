@@ -30,26 +30,29 @@ export default async function PremiumPage() {
   return (
     <div className="premium-page-v2">
 
-      {/* Dark hero */}
-      <div className="premium-hero">
-        <span className="premium-eyebrow">MangoRemote Premium</span>
-        <h1>Find your remote job in Asia faster.</h1>
-        <p>Premium members access the full job board, get new roles delivered weekly, and apply before free members even see the listing.</p>
+      {/* Hero with image */}
+      <div className="premium-hero-image">
+        <img src="/about-hero.jpg" alt="Asia skyline" />
+        <div className="premium-hero-overlay">
+          <span className="premium-eyebrow">MangoRemote Premium</span>
+          <h1>Find your remote job in Asia faster.</h1>
+          <p>Premium members access the full job board, get new roles delivered weekly, and apply before free members even see the listing.</p>
 
-        <div className="premium-stats">
-          <div className="premium-stat">
-            <strong>{jobStat}</strong>
-            <span>Curated jobs</span>
-          </div>
-          <div className="premium-stat-divider" />
-          <div className="premium-stat">
-            <strong>Weekly</strong>
-            <span>New listings</span>
-          </div>
-          <div className="premium-stat-divider" />
-          <div className="premium-stat">
-            <strong>Asia-first</strong>
-            <span>Every single role</span>
+          <div className="premium-stats">
+            <div className="premium-stat">
+              <strong>{jobStat}</strong>
+              <span>Curated jobs</span>
+            </div>
+            <div className="premium-stat-divider" />
+            <div className="premium-stat">
+              <strong>Weekly</strong>
+              <span>New listings</span>
+            </div>
+            <div className="premium-stat-divider" />
+            <div className="premium-stat">
+              <strong>Asia-first</strong>
+              <span>Every single role</span>
+            </div>
           </div>
         </div>
       </div>
