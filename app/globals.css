@@ -66,6 +66,12 @@ a {
   text-decoration: none;
 }
 
+.nav-logo img {
+  height: auto;
+  width: auto;
+  max-width: 220px;
+}
+
 .nav-logo-emoji {
   font-size: 22px;
   line-height: 1;

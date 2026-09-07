@@ -26,7 +26,7 @@ export default function Nav() {
   return (
     <nav className="nav">
       <Link href="/" className="nav-logo" onClick={() => setMenuOpen(false)}>
-        <Image src="/logo.png" alt="MangoRemote" width={240} height={60} priority />
+        <Image src="/logo.png" alt="MangoRemote" width={240} height={80} priority />
       </Link>
 
       <div className="nav-links">
