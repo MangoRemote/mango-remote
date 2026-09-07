@@ -1,0 +1,79 @@
+'use client'
+
+import Link from 'next/link'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
+
+export default function Nav() {
+  const [user, setUser] = useState<User | null>(null)
+  const [ready, setReady] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user)
+      setReady(true)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  return (
+    <nav className="nav">
+      <Link href="/" className="nav-logo" onClick={() => setMenuOpen(false)}>
+        <Image src="/logo.png" alt="MangoRemote" width={240} height={60} priority />
+      </Link>
+
+      <div className="nav-links">
+        <Link href="/jobs">Remote Jobs</Link>
+        <Link href="/post-a-job">Post a Job</Link>
+        <Link href="/about">About</Link>
+      </div>
+
+      <div className="nav-actions">
+        {ready && user ? (
+          <>
+            <Link href="/account" className="btn-nav-plain">My Account</Link>
+            <button className="btn-ghost" onClick={async () => {
+              const supabase = createClient()
+              await supabase.auth.signOut()
+              window.location.href = '/'
+            }}>Sign out</button>
+          </>
+        ) : (
+          <>
+            <Link href="/auth/login" className="btn-nav-plain">Sign in</Link>
+            <Link href="/premium" className="btn-primary">Unlock All Jobs</Link>
+          </>
+        )}
+      </div>
+
+      {/* Mobile hamburger */}
+      <button
+        className="nav-hamburger"
+        aria-label="Toggle menu"
+        onClick={() => setMenuOpen(o => !o)}
+      >
+        <span /><span /><span />
+      </button>
+
+      {menuOpen && (
+        <div className="nav-mobile-menu" onClick={() => setMenuOpen(false)}>
+          <Link href="/jobs">Remote Jobs</Link>
+          <Link href="/premium">Unlock All Jobs</Link>
+          <Link href="/post-a-job">Post a Job</Link>
+          <Link href="/about">About</Link>
+          {ready && user
+            ? <Link href="/account">My Account</Link>
+            : <Link href="/auth/login">Sign in</Link>
+          }
+        </div>
+      )}
+    </nav>
+  )
+}
