@@ -110,6 +110,10 @@ export default async function JobsPage({ searchParams }: Props) {
   const freeJobs = allJobs.filter(j => !j.is_premium)
   const premiumJobs = allJobs.filter(j => j.is_premium)
 
+  const FREE_JOB_LIMIT = 50
+  const visibleFreeJobs = isPremium ? freeJobs : freeJobs.slice(0, FREE_JOB_LIMIT)
+  const lockedFreeJobs = isPremium ? [] : freeJobs.slice(FREE_JOB_LIMIT)
+
   const hasFilters = !!(params.q || params.category || params.type || params.asia || params.country || params.level || params.posted)
 
   const activeFilterCount = [params.q, params.category, params.type, params.asia || params.country, params.level, params.posted].filter(Boolean).length
@@ -149,22 +153,32 @@ export default async function JobsPage({ searchParams }: Props) {
       />
 
       <div className="jobs-list">
-        {freeJobs.map(job => (
+        {visibleFreeJobs.map(job => (
           <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
         ))}
 
-        {premiumJobs.length > 0 && !isPremium && (
+        {(lockedFreeJobs.length > 0 || premiumJobs.length > 0) && !isPremium && (
           <>
-            <PremiumGate count={premiumJobs.length} hasSearch={hasFilters} />
+            <PremiumGate count={lockedFreeJobs.length + premiumJobs.length} hasSearch={hasFilters} />
+            {lockedFreeJobs.map(job => (
+              <JobRow key={job.id} job={job} locked />
+            ))}
             {premiumJobs.map(job => (
               <JobRow key={job.id} job={job} locked />
             ))}
           </>
         )}
 
-        {premiumJobs.length > 0 && isPremium && premiumJobs.map(job => (
-          <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
-        ))}
+        {isPremium && (
+          <>
+            {lockedFreeJobs.map(job => (
+              <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
+            ))}
+            {premiumJobs.map(job => (
+              <JobRow key={job.id} job={job} saved={savedIds.has(job.id)} isLoggedIn={!!user} />
+            ))}
+          </>
+        )}
 
         {allJobs.length === 0 && (
           <div className="jobs-empty">
