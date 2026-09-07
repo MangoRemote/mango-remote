@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
@@ -26,7 +25,7 @@ export default function Nav() {
   return (
     <nav className="nav">
       <Link href="/" className="nav-logo" onClick={() => setMenuOpen(false)}>
-        <Image src="/logo.png" alt="MangoRemote" width={240} height={80} priority />
+        <img src="/logo.png" alt="MangoRemote" style={{ maxWidth: '200px', height: 'auto' }} />
       </Link>
 
       <div className="nav-links">
