@@ -1,0 +1,20 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Trunk -->
+  <rect x="28" y="36" width="8" height="20" fill="#8B6F47" rx="1"/>
+
+  <!-- Palm fronds -->
+  <g fill="#2D5016">
+    <!-- Left fronds -->
+    <path d="M 32 32 Q 16 28 12 16" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M 32 32 Q 14 26 8 12" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M 32 32 Q 18 22 16 8" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- Right fronds -->
+    <path d="M 32 32 Q 48 28 52 16" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M 32 32 Q 50 26 56 12" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M 32 32 Q 46 22 48 8" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- Center frond -->
+    <path d="M 32 32 Q 32 24 32 8" stroke="#2D5016" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
