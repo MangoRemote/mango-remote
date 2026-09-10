@@ -97,18 +97,6 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
 
   const inner = (
     <>
-      {job.company?.logo_url ? (
-        <img src={job.company.logo_url} alt={companyName} className="company-avatar-img" />
-      ) : (
-        <div className="company-avatar" style={{
-          background: AVATAR_COLOURS[(companyName.charCodeAt(0) || 0) % AVATAR_COLOURS.length],
-          color: '#fff',
-          borderColor: 'transparent',
-        }}>
-          {companyName.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
-        </div>
-      )}
-
       <div className="job-card-body">
         <div className="job-card-top">
           <span className="job-title">{job.title}</span>
