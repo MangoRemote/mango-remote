@@ -8,8 +8,8 @@ import type { Job } from '@/lib/types'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'MangoRemote — Remote Jobs That Let You Live in Asia',
-  description: 'Find remote jobs compatible with living in Thailand, Japan, Vietnam, and across Asia. Every role vetted for timezone flexibility.',
+  title: 'MangoRemote — Remote Jobs For Living in Asia',
+  description: 'Find genuinely Asia-friendly remote jobs in Thailand, Vietnam, Japan, Indonesia, Philippines, and beyond. 138 curated roles vetted for timezone compatibility.',
 }
 
 export const dynamic = 'force-dynamic'
