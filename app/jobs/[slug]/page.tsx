@@ -1,11 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import JobRow from '@/components/JobRow'
-import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import type { Job } from '@/lib/types'
 import type { Metadata } from 'next'
-
-export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -14,21 +9,31 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const supabase = await createClient()
+
   const { data: job } = await supabase
     .from('jobs')
-    .select('title, description, company:companies(name)')
+    .select('*, company:companies(*), category:categories(*)')
     .eq('slug', slug)
     .single()
 
-  if (!job) return { title: 'Job not found' }
-  const company = Array.isArray(job.company) ? job.company[0] : job.company
+  if (!job) {
+    return { title: 'Job not found' }
+  }
+
+  const description = job.description?.substring(0, 160) || 'Remote job opportunity'
+
   return {
-    title: `${job.title} at ${company?.name} — MangoRemote`,
-    description: job.description?.slice(0, 155),
+    title: `${job.title} at ${job.company?.name} — MangoRemote`,
+    description,
+    openGraph: {
+      title: `${job.title} — MangoRemote`,
+      description,
+      type: 'website',
+    },
   }
 }
 
-export default async function JobPage({ params }: Props) {
+export default async function JobDetailPage({ params }: Props) {
   const { slug } = await params
   const supabase = await createClient()
 
@@ -36,156 +41,47 @@ export default async function JobPage({ params }: Props) {
     .from('jobs')
     .select('*, company:companies(*), category:categories(*)')
     .eq('slug', slug)
-    .eq('status', 'live')
     .single()
 
-  if (!job) notFound()
-
-  const j = job as Job
-
-  if (j.is_premium) {
-    const { data: { user } } = await supabase.auth.getUser()
-    let isPremium = false
-    if (user) {
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('plan, status')
-        .eq('user_id', user.id)
-        .single()
-      isPremium = sub?.plan === 'premium' && sub?.status === 'active'
-
-      const { data: userData } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      if (userData?.role === 'admin') isPremium = true
-    }
-    if (!isPremium) redirect(`/premium?from=${slug}`)
+  if (!job) {
+    return (
+      <main style={{ padding: '40px 28px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
+        <h1>Job not found</h1>
+        <p>This job may have expired or been removed.</p>
+        <Link href="/jobs">← Back to all jobs</Link>
+      </main>
+    )
   }
 
-  const company = Array.isArray(j.company) ? j.company[0] : j.company
-  const category = Array.isArray(j.category) ? j.category[0] : j.category
-
-  const { data: related } = await supabase
-    .from('jobs')
-    .select('*, company:companies(*), category:categories(*)')
-    .eq('category_id', j.category_id)
-    .eq('status', 'live')
-    .neq('id', j.id)
-    .limit(4)
-
-  function formatSalary() {
-    if (!j.salary_min && !j.salary_max) return null
-    const cur = j.salary_currency || 'USD'
-    const sym = cur === 'USD' ? '$' : cur === 'EUR' ? '€' : cur === 'GBP' ? '£' : cur
-    const fmt = (n: number) => n >= 1000 ? `${Math.round(n / 1000)}k` : String(n)
-    if (j.salary_min && j.salary_max) return `${sym}${fmt(j.salary_min)}–${sym}${fmt(j.salary_max)}`
-    if (j.salary_min) return `${sym}${fmt(j.salary_min)}+`
-    return null
-  }
-
-  const salary = formatSalary()
-  const regions = (j.region_tags || []).filter(r => r && r !== 'Remote Worldwide' && r !== 'Remote Asia')
+  const isExpired = job.expires_at && new Date(job.expires_at) < new Date()
 
   return (
-    <main className="job-detail-page">
+    <main style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 28px' }}>
+      {isExpired && <div style={{ background: '#fef3c7', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', color: '#92400e' }}>⚠️ This job has expired.</div>}
+      
+      <Link href="/jobs" style={{ color: '#F26419', fontSize: '13px' }}>← Back</Link>
+      <h1 style={{ fontSize: '44px', fontWeight: '800', margin: '16px 0 8px' }}>{job.title}</h1>
+      <p style={{ fontSize: '15px', color: '#3D4451', marginBottom: '24px' }}>{job.company?.name} {job.category?.name && `• ${job.category.name}`}</p>
 
-      {/* Breadcrumb */}
-      <div className="job-detail-breadcrumb">
-        <Link href="/">Remote Jobs</Link>
-        <span>›</span>
-        {category && <Link href={`/jobs?category=${category.slug}`}>{category.name}</Link>}
-        {category && <span>›</span>}
-        <span>{j.title}</span>
+      <div style={{ background: '#F9FAFB', padding: '24px', borderRadius: '10px', marginBottom: '32px', border: '1px solid #E8EAED' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '16px' }}>About this role</h2>
+        <div style={{ fontSize: '15px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{job.description}</div>
       </div>
 
-      {/* Header card */}
-      <div className="job-detail-header">
-        <div className="job-detail-company-row">
-          {company?.logo_url ? (
-            <img src={company.logo_url} alt={company.name} className="job-detail-logo" />
-          ) : (
-            <div className="job-detail-logo-placeholder">
-              {company?.name?.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-          <div>
-            <div className="job-detail-company-name">{company?.name}</div>
-            {company?.website && (
-              <a href={company.website} target="_blank" rel="noopener noreferrer" className="job-detail-company-url">
-                {company.website.replace(/^https?:\/\//, '')}
-              </a>
-            )}
-          </div>
-        </div>
+      <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ background: '#F26419', color: '#fff', padding: '12px 28px', borderRadius: '6px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
+        Apply now →
+      </a>
 
-        <h1 className="job-detail-title">{j.title}</h1>
-
-        {/* Quick facts */}
-        <div className="job-detail-facts">
-          {category && (
-            <div className="job-detail-fact">
-              <span className="job-detail-fact-label">Category</span>
-              <span className="job-detail-fact-value">{category.name}</span>
-            </div>
-          )}
-          <div className="job-detail-fact">
-            <span className="job-detail-fact-label">Type</span>
-            <span className="job-detail-fact-value" style={{ textTransform: 'capitalize' }}>{j.employment_type}</span>
-          </div>
-          {regions.length > 0 && (
-            <div className="job-detail-fact">
-              <span className="job-detail-fact-label">Location</span>
-              <span className="job-detail-fact-value">{regions.join(', ')}</span>
-            </div>
-          )}
-          {salary && (
-            <div className="job-detail-fact">
-              <span className="job-detail-fact-label">Salary</span>
-              <span className="job-detail-fact-value salary-inline">{salary}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Apply CTA */}
-        <a
-          href={j.apply_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="job-detail-apply-btn"
-        >
-          Apply for this role →
-        </a>
-        <p className="job-detail-apply-note">You'll be taken to {company?.name?.trim()}'s careers page</p>
+      <div style={{ padding: '24px', background: '#F9FAFB', borderRadius: '10px', border: '1px solid #E8EAED' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#6B7280', marginBottom: '12px', textTransform: 'uppercase' }}>Job details</h3>
+        <ul style={{ fontSize: '13px', color: '#3D4451', lineHeight: '1.8' }}>
+          {job.company?.name && <li><strong>Company:</strong> {job.company.name}</li>}
+          {job.employment_type && <li><strong>Type:</strong> {job.employment_type}</li>}
+          {job.category?.name && <li><strong>Category:</strong> {job.category.name}</li>}
+          <li><strong>Posted:</strong> {new Date(job.published_at).toLocaleDateString()}</li>
+          {job.expires_at && <li><strong>Expires:</strong> {new Date(job.expires_at).toLocaleDateString()}</li>}
+        </ul>
       </div>
-
-      {/* Description */}
-      <div className="job-detail-body">
-        <h2 className="job-detail-section-title">About the role</h2>
-        <div className="job-detail-description" dangerouslySetInnerHTML={{ __html: j.description || '' }} />
-      </div>
-
-      {/* Apply CTA bottom */}
-      <div className="job-detail-apply-bottom">
-        <a
-          href={j.apply_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="job-detail-apply-btn"
-        >
-          Apply for this role →
-        </a>
-        <p className="job-detail-apply-note">You'll be taken to {company?.name?.trim()}'s careers page</p>
-      </div>
-
-      {/* Related jobs */}
-      {related && related.length > 0 && (
-        <div className="job-detail-related">
-          <div className="job-detail-related-heading">More {category?.name} roles</div>
-          {related.map(r => <JobRow key={r.id} job={r as Job} />)}
-        </div>
-      )}
     </main>
   )
 }
