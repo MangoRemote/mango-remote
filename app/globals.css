@@ -482,7 +482,7 @@ a {
   align-items: center;
   gap: 16px;
   padding: 18px 24px;
-  background: var(--surface);
+  background: #F9FAFB;
   border: 1px solid var(--border);
   border-left: 4px solid transparent;
   border-radius: 10px;
