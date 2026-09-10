@@ -31,6 +31,14 @@ export const metadata: Metadata = {
     url: 'https://mangoremote.com',
     siteName: 'MangoRemote',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'MangoRemote - Remote jobs for living in Asia',
+      },
+    ],
   },
 }
 
