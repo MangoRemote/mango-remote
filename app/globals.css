@@ -16,6 +16,18 @@
   --nav-h: 64px;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F1419;
+    --surface: #1a1f2e;
+    --text: #f0f1f3;
+    --muted: #9ca3af;
+    --subtle: #6b7280;
+    --border: #2d3748;
+    --tag-bg: #2d3748;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -48,7 +60,7 @@ a {
   justify-content: space-between;
   height: var(--nav-h);
   padding: 0 28px;
-  background: #fff;
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -110,7 +122,7 @@ a {
   font-weight: 500;
   color: var(--text);
   background: none;
-  border: 1px solid #D1D5DB;
+  border: 1px solid var(--border);
   padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
@@ -119,8 +131,9 @@ a {
 }
 
 .btn-ghost:hover {
-  border-color: #9CA3AF;
-  background: #F9FAFB;
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(242, 100, 25, 0.1);
 }
 
 .btn-primary {
@@ -493,14 +506,27 @@ a {
 }
 
 .job-card:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  border-color: #C8CBD4;
+  box-shadow: 0 4px 16px rgba(242, 100, 25, 0.15);
+  border-color: var(--accent);
   border-left-color: var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .job-card:hover {
+    box-shadow: 0 4px 16px rgba(242, 100, 25, 0.25);
+  }
 }
 
 .job-card.featured {
   border-left-color: var(--accent);
-  background: #fffaf7;
+  background: linear-gradient(135deg, #fff7f0 0%, #fff9f5 100%);
+  box-shadow: 0 2px 12px rgba(242, 100, 25, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .job-card.featured {
+    background: linear-gradient(135deg, rgba(242, 100, 25, 0.15) 0%, rgba(242, 100, 25, 0.08) 100%);
+  }
 }
 
 .job-card.locked {
