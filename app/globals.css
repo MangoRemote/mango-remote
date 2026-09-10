@@ -16,18 +16,6 @@
   --nav-h: 64px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0F1419;
-    --surface: #1a1f2e;
-    --text: #f0f1f3;
-    --muted: #9ca3af;
-    --subtle: #6b7280;
-    --border: #2d3748;
-    --tag-bg: #2d3748;
-  }
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -511,22 +499,10 @@ a {
   border-left-color: var(--accent);
 }
 
-@media (prefers-color-scheme: dark) {
-  .job-card:hover {
-    box-shadow: 0 4px 16px rgba(242, 100, 25, 0.25);
-  }
-}
-
 .job-card.featured {
   border-left-color: var(--accent);
   background: linear-gradient(135deg, #fff7f0 0%, #fff9f5 100%);
   box-shadow: 0 2px 12px rgba(242, 100, 25, 0.12);
-}
-
-@media (prefers-color-scheme: dark) {
-  .job-card.featured {
-    background: linear-gradient(135deg, rgba(242, 100, 25, 0.15) 0%, rgba(242, 100, 25, 0.08) 100%);
-  }
 }
 
 .job-card.locked {
