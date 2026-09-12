@@ -60,23 +60,23 @@ export default async function PostAJobPage() {
 
       <div className="post-job-why">
         <div className="post-job-why-inner">
-          <span className="post-job-eyebrow" style={{ color: 'var(--accent)' }}>Why post here</span>
-          <h2>Generic job boards waste your time.<br />This one doesn&apos;t.</h2>
+          <span className="post-job-eyebrow" style={{ color: 'var(--accent)' }}>Why it works</span>
+          <h2>You're not competing with 10,000 jobs for timezones that don't fit.</h2>
           <div className="post-job-why-grid">
             <div className="post-job-why-item">
-              <div className="post-job-why-num">01</div>
-              <strong>Zero timezone-mismatch applicants</strong>
-              <p>On a generic board, most applicants can&apos;t actually work your hours. Here, every single visitor came looking for Work from Anywhere or APAC roles specifically — that&apos;s the entire premise of the site.</p>
+              <div className="post-job-why-num">→</div>
+              <strong>No timezone bullshit</strong>
+              <p>Most job boards are flooded with "remote" roles that aren't actually timezone-friendly. Everyone here is specifically looking for Asia work. You get applicants who actually fit.</p>
             </div>
             <div className="post-job-why-item">
-              <div className="post-job-why-num">02</div>
-              <strong>A growing, engaged audience</strong>
-              <p>{jobCount || 0}+ live roles and climbing daily. Candidates check back often because the board stays fresh — meaning your listing keeps getting real eyes, not a one-day spike that dies.</p>
+              <div className="post-job-why-num">→</div>
+              <strong>People come back</strong>
+              <p>{jobCount || 0}+ roles live, fresh postings daily. Job seekers bookmark it. Your listing stays visible for 30 days, not buried in 24 hours.</p>
             </div>
             <div className="post-job-why-item">
-              <div className="post-job-why-num">03</div>
-              <strong>They apply straight to you</strong>
-              <p>No aggregator middlemen, no lost leads, no extra clicks. One tap sends the candidate directly to your careers page, ready to apply.</p>
+              <div className="post-job-why-num">→</div>
+              <strong>Direct pipeline</strong>
+              <p>They apply to you, not some third-party platform. No middleman, no lost emails. You own the conversation from hello.</p>
             </div>
           </div>
         </div>

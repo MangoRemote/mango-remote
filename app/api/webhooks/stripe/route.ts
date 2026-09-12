@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
 
 const getStripe = () => new Stripe(process.env.STRIPE_SECRET_KEY!)
+const getResend = () => new Resend(process.env.RESEND_API_KEY!)
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -110,6 +112,30 @@ export async function POST(request: Request) {
             payment_status: 'paid',
             stripe_payment_id: session.payment_intent as string,
           })
+
+          // Send notification email
+          try {
+            await getResend().emails.send({
+              from: 'MangoRemote <noreply@mangoremote.com>',
+              to: 'hello@mangoremote.com',
+              subject: `New job posting: ${data.title} at ${data.company_name}`,
+              html: `
+                <h2>New Job Posting Received</h2>
+                <p><strong>Job Title:</strong> ${data.title}</p>
+                <p><strong>Company:</strong> ${data.company_name}</p>
+                <p><strong>Category:</strong> ${data.category}</p>
+                <p><strong>Employment Type:</strong> ${data.employment_type}</p>
+                <p><strong>Location:</strong> ${data.location}</p>
+                ${data.salary_min ? `<p><strong>Salary:</strong> ${data.salary_currency} ${data.salary_min}${data.salary_max ? ' - ' + data.salary_max : '+'}</p>` : ''}
+                <p><strong>Apply URL:</strong> <a href="${data.apply_url}">${data.apply_url}</a></p>
+                <hr />
+                <p><strong>Description:</strong></p>
+                <p>${data.description.replace(/\n/g, '<br />')}</p>
+              `,
+            })
+          } catch (err) {
+            console.error('Failed to send job posting notification:', err)
+          }
         }
       }
     }
