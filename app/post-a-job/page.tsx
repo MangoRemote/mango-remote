@@ -58,27 +58,15 @@ export default async function PostAJobPage() {
         </ul>
       </div>
 
-      <div className="post-job-why">
-        <div className="post-job-why-inner">
-          <span className="post-job-eyebrow" style={{ color: 'var(--accent)' }}>Why it works</span>
-          <h2>You're not competing with 10,000 jobs for timezones that don't fit.</h2>
-          <div className="post-job-why-grid">
-            <div className="post-job-why-item">
-              <div className="post-job-why-num">→</div>
-              <strong>No timezone bullshit</strong>
-              <p>Most job boards are flooded with "remote" roles that aren't actually timezone-friendly. Everyone here is specifically looking for Asia work. You get applicants who actually fit.</p>
-            </div>
-            <div className="post-job-why-item">
-              <div className="post-job-why-num">→</div>
-              <strong>People come back</strong>
-              <p>{jobCount || 0}+ roles live, fresh postings daily. Job seekers bookmark it. Your listing stays visible for 30 days, not buried in 24 hours.</p>
-            </div>
-            <div className="post-job-why-item">
-              <div className="post-job-why-num">→</div>
-              <strong>Direct pipeline</strong>
-              <p>They apply to you, not some third-party platform. No middleman, no lost emails. You own the conversation from hello.</p>
-            </div>
-          </div>
+      <div className="post-job-context">
+        <div className="post-job-context-inner">
+          <h2>Who's on here</h2>
+          <p>
+            {jobCount || 0}+ roles live right now from companies actually hiring for Asia timezones. Remote workers here aren't browsing LinkedIn for fun—they're specifically looking for roles that fit their timezone and location. No wasted applications.
+          </p>
+          <p>
+            Your job stays visible for 30 days. People bookmark it, come back. It doesn't get buried in 24 hours like other boards. And they apply directly to you—no middleman, no lost emails.
+          </p>
         </div>
       </div>
 
