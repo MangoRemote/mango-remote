@@ -5,7 +5,9 @@ export default function Footer() {
     <footer className="footer-main">
       <div className="footer-inner">
         <div className="footer-brand">
-          <div className="footer-logo">🥭 <span>Mango</span>Remote</div>
+          <Link href="/" className="footer-logo">
+            <span className="logo-mango">Mango</span><span className="logo-remote">Remote</span>
+          </Link>
           <p className="footer-tagline">Remote jobs that let you live in Asia.</p>
           <div className="footer-social">
             <a href="https://instagram.com/sidneyygeorge" target="_blank" rel="noopener noreferrer">Instagram</a>
