@@ -10,7 +10,6 @@ export default function Footer() {
           </Link>
           <p className="footer-tagline">Remote jobs that let you live in Asia.</p>
           <div className="footer-social">
-            <a href="https://instagram.com/sidneyygeorge" target="_blank" rel="noopener noreferrer">Instagram</a>
             <a href="https://linkedin.com/company/mangoremote" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           </div>
         </div>

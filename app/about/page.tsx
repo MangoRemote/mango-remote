@@ -14,7 +14,7 @@ export default function AboutPage() {
       </div>
 
       <div className="about-header">
-        <h1>Remote jobs built for Asia.</h1>
+        <h1>Remote jobs built for <em>Asia</em>.</h1>
         <p>
           MangoRemote is the first job board dedicated to remote work that actually works for people living in Asia.
         </p>
