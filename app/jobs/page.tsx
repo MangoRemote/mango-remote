@@ -55,6 +55,7 @@ export default async function JobsPage({ searchParams }: Props) {
     .select('*, company:companies(*), category:categories(*)')
     .eq('status', 'live')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .gte('published_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
 
   // Sort
   if (params.sort === 'featured') {
