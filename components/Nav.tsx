@@ -35,6 +35,7 @@ export default function Nav() {
       </div>
 
       <div className="nav-actions">
+        <a href="https://mangoremote.substack.com" target="_blank" rel="noopener noreferrer" className="btn-nav-plain">Job Alerts</a>
         {ready && user ? (
           <>
             <Link href="/account" className="btn-nav-plain">My Account</Link>
@@ -64,6 +65,7 @@ export default function Nav() {
       {menuOpen && (
         <div className="nav-mobile-menu" onClick={() => setMenuOpen(false)}>
           <Link href="/jobs">Remote Jobs</Link>
+          <a href="https://mangoremote.substack.com" target="_blank" rel="noopener noreferrer">Job Alerts</a>
           <Link href="/premium">Unlock All Jobs</Link>
           <Link href="/post-a-job">Post a Job</Link>
           <Link href="/about">About</Link>
