@@ -293,7 +293,6 @@ export async function POST(request: NextRequest) {
     }
 
     const jobsToInsert = newJobs.map(job => ({
-      company_id: job.company_id,
       title: job.title,
       slug: job.slug,
       description: job.description,
