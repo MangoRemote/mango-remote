@@ -1,7 +1,7 @@
 import { createClient as createServerClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-const jobs = [
+const defaultJobs = [
   {
     title: 'Account Executive, Mid Market - North Asia',
     company_id: 'hubspot',
@@ -260,6 +260,19 @@ Location: Philippines only`,
 ]
 
 export async function POST(request: NextRequest) {
+  let jobs: any[] = []
+
+  try {
+    const body = await request.json()
+    jobs = body.jobs || defaultJobs
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  if (!Array.isArray(jobs) || jobs.length === 0) {
+    return NextResponse.json({ error: 'Jobs array is required and must not be empty' }, { status: 400 })
+  }
+
   const supabase = createServerClient(
     'https://lsmqxktdyzlkuqtxfsvf.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbXF4a3RkeXpsa3VxdHhmc3ZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDI4MzA0MSwiZXhwIjoyMDM5ODU5MDQxfQ.nA_-2-dDqUWQVdpDLXz8IlC8fPUXxG4eqQLxL7zLGO8'
