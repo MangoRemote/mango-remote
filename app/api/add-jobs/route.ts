@@ -279,6 +279,23 @@ export async function POST(request: NextRequest) {
   )
 
   try {
+    // Ensure default company exists
+    const { data: companies } = await supabase
+      .from('companies')
+      .select('id')
+      .eq('slug', 'unknown')
+      .single()
+
+    let defaultCompanyId = companies?.id
+    if (!defaultCompanyId) {
+      const { data: newCompany } = await supabase
+        .from('companies')
+        .insert({ slug: 'unknown', name: 'Unknown Company' })
+        .select('id')
+        .single()
+      defaultCompanyId = newCompany?.id
+    }
+
     // Check for duplicates by apply_url
     const { data: existingJobs } = await supabase
       .from('jobs')
@@ -293,6 +310,7 @@ export async function POST(request: NextRequest) {
     }
 
     const jobsToInsert = newJobs.map(job => ({
+      company_id: defaultCompanyId,
       title: job.title,
       slug: job.slug,
       description: job.description,
