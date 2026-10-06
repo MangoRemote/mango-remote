@@ -13,6 +13,11 @@ function isNew(dateStr: string): boolean {
   return Date.now() - new Date(dateStr).getTime() < 48 * 60 * 60 * 1000
 }
 
+function isExpired(dateStr: string): boolean {
+  const daysOld = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+  return daysOld > 30
+}
+
 function daysAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const days = Math.floor(diff / 86400000)
@@ -93,6 +98,7 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   const categoryName = job.category?.name || ''
   const rawRegions = (job.region_tags || []).filter(Boolean)
   const jobIsNew = isNew(job.published_at || job.created_at)
+  const jobIsExpired = isExpired(job.published_at || job.created_at)
   const experienceLevel = getExperienceLevel(job.title)
 
   const inner = (
@@ -120,7 +126,8 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
         {categoryName && (
           <span className="category-badge" style={{ background: categoryColour(categoryName) }}>{categoryName}</span>
         )}
-        {job.is_featured && <span className="featured-label">★ Featured</span>}
+        {jobIsExpired && <span className="expired-label" style={{ background: '#EF4444', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>Expired</span>}
+        {job.is_featured && !jobIsExpired && <span className="featured-label">★ Featured</span>}
         <span className="days-ago">{daysAgo(job.published_at || job.created_at)}</span>
         {locked && <span className="locked-icon">🔒</span>}
         {isLoggedIn && !locked && <SaveButton jobId={job.id} initialSaved={saved} />}
