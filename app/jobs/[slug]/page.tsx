@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import Script from 'next/script'
 import type { Metadata } from 'next'
 
 interface Props {
@@ -55,8 +56,35 @@ export default async function JobDetailPage({ params }: Props) {
 
   const isExpired = job.expires_at && new Date(job.expires_at) < new Date()
 
+  const jobPostingSchema = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    "title": job.title,
+    "description": job.description?.substring(0, 500) || job.title,
+    "url": `https://mangoremote.com/jobs/${job.slug}`,
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": job.company?.name || "Unknown Company"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "Global"
+      }
+    },
+    "employmentType": job.employment_type || "FULL_TIME",
+    "datePosted": job.published_at,
+    "validThrough": job.expires_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  }
+
   return (
     <main style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 28px' }}>
+      <Script
+        id="job-posting-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingSchema) }}
+      />
       {isExpired && <div style={{ background: '#fef3c7', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', color: '#92400e' }}>⚠️ This job has expired.</div>}
       
       <Link href="/jobs" style={{ color: '#F26419', fontSize: '13px' }}>← Back</Link>

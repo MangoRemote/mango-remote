@@ -15,8 +15,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'MangoRemote — Remote jobs that let you live in Asia',
-  description: 'Find remote jobs compatible with living in Bangkok, Bali, Vietnam and across Asia. Curated remote roles with Asia-friendly timezone tags.',
+  title: 'Remote Jobs in Asia - Timezone Friendly Work from Thailand, Vietnam, Japan',
+  description: 'Find remote jobs compatible with living in Asia. Vetted roles for timezone flexibility in Thailand, Vietnam, Japan, Indonesia, Philippines & more. Browse 160+ remote opportunities.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'),
   icons: {
     icon: '/favicon.svg',
@@ -46,6 +46,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={dmSans.variable}>
+      <head>
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "MangoRemote",
+              "url": "https://mangoremote.com",
+              "description": "Remote job board for professionals living in Asia",
+              "sameAs": ["https://linkedin.com/company/mangoremote"]
+            })
+          }}
+        />
+      </head>
       <body>
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

@@ -6,8 +6,8 @@ import type { Metadata } from 'next'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Post a Job — MangoRemote',
-  description: 'Hire remote talent that already lives in Asia. $99 for a 30-day listing.',
+  title: 'Post Remote Job in Asia - Reach Remote Workers - MangoRemote',
+  description: 'Post your remote job to reach professionals in Asia. List positions for Thailand, Vietnam, Japan, Indonesia & across Asia. One-off payment, usually approved within 24 hours.',
 }
 
 export default async function PostAJobPage() {
