@@ -274,8 +274,8 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServerClient(
-    'https://wdzxmpgqcoycrhdzkrzr.supabase.co',
-    'sb_publishable_rlgrEV-_ozLq9P_fO8IcBg__9t2mSAz'
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
   )
 
   try {
