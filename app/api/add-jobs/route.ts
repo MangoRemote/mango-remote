@@ -274,8 +274,8 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServerClient(
-    'https://lsmqxktdyzlkuqtxfsvf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbXF4a3RkeXpsa3VxdHhmc3ZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDI4MzA0MSwiZXhwIjoyMDM5ODU5MDQxfQ.nA_-2-dDqUWQVdpDLXz8IlC8fPUXxG4eqQLxL7zLGO8'
+    'https://wdzxmpgqcoycrhdzkrzr.supabase.co',
+    'sb_publishable_rlgrEV-_ozLq9P_fO8IcBg__9t2mSAz'
   )
 
   try {
