@@ -320,6 +320,7 @@ export async function POST(request: NextRequest) {
       asia_friendly: job.asia_friendly,
       status: job.status,
       source: job.source,
+      category_id: job.category_id,
       published_at: new Date().toISOString()
     }))
 
