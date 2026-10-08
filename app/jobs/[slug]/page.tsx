@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { hasPremiumAccess } from '@/lib/access'
 import Link from 'next/link'
 import Script from 'next/script'
 import type { Metadata } from 'next'
@@ -7,21 +8,32 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const supabase = await createClient()
+const LIFETIME_MS = 35 * 24 * 60 * 60 * 1000
 
+async function loadJob(slug: string) {
+  const supabase = await createClient()
   const { data: job } = await supabase
     .from('jobs')
     .select('*, company:companies(*), category:categories(*)')
     .eq('slug', slug)
     .single()
 
+  if (!job) return null
+  if (new Date(job.published_at).getTime() < Date.now() - LIFETIME_MS) return null
+  return job
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const job = await loadJob(slug)
+
   if (!job) {
     return { title: 'Job not found' }
   }
 
-  const description = job.description?.substring(0, 160) || 'Remote job opportunity'
+  const description = job.is_premium
+    ? 'Premium remote job on MangoRemote'
+    : job.description?.substring(0, 160) || 'Remote job opportunity'
 
   return {
     title: `${job.title} at ${job.company?.name} — MangoRemote`,
@@ -36,13 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function JobDetailPage({ params }: Props) {
   const { slug } = await params
-  const supabase = await createClient()
-
-  const { data: job } = await supabase
-    .from('jobs')
-    .select('*, company:companies(*), category:categories(*)')
-    .eq('slug', slug)
-    .single()
+  const job = await loadJob(slug)
 
   if (!job) {
     return (
@@ -54,6 +60,11 @@ export default async function JobDetailPage({ params }: Props) {
     )
   }
 
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const hasAccess = await hasPremiumAccess(supabase, user?.id)
+  const locked = job.is_premium && !hasAccess
+
   const daysOld = Math.floor((Date.now() - new Date(job.published_at).getTime()) / 86400000)
   const isExpired = job.expires_at && new Date(job.expires_at) < new Date()
   const isOldPosting = daysOld > 30
@@ -62,7 +73,7 @@ export default async function JobDetailPage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     "title": job.title,
-    "description": job.description?.substring(0, 500) || job.title,
+    "description": locked ? job.title : job.description?.substring(0, 500) || job.title,
     "url": `https://mangoremote.com/jobs/${job.slug}`,
     "hiringOrganization": {
       "@type": "Organization",
@@ -89,19 +100,33 @@ export default async function JobDetailPage({ params }: Props) {
       />
       {isOldPosting && <div style={{ background: '#FEE2E2', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', color: '#7F1D1D', fontWeight: '500' }}>⚠️ This job posting is expired and will be removed soon. It may no longer be active.</div>}
       {isExpired && <div style={{ background: '#FEE2E2', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', color: '#7F1D1D', fontWeight: '500' }}>⚠️ This job has expired.</div>}
-      
+
       <Link href="/jobs" style={{ color: '#F26419', fontSize: '13px' }}>← Back</Link>
       <h1 style={{ fontSize: '44px', fontWeight: '800', margin: '16px 0 8px' }}>{job.title}</h1>
       <p style={{ fontSize: '15px', color: '#3D4451', marginBottom: '24px' }}>{job.company?.name} {job.category?.name && `• ${job.category.name}`}</p>
 
-      <div style={{ background: '#F9FAFB', padding: '24px', borderRadius: '10px', marginBottom: '32px', border: '1px solid #E8EAED' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '16px' }}>About this role</h2>
-        <div style={{ fontSize: '15px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{job.description}</div>
-      </div>
+      {locked ? (
+        <div style={{ background: '#F9FAFB', padding: '24px', borderRadius: '10px', marginBottom: '32px', border: '1px solid #E8EAED' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '12px' }}>Premium job</h2>
+          <p style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '16px' }}>
+            The full description and application link are available to Premium members.
+          </p>
+          <Link href="/premium" style={{ background: '#F26419', color: '#fff', padding: '12px 28px', borderRadius: '6px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block' }}>
+            See Premium plans →
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div style={{ background: '#F9FAFB', padding: '24px', borderRadius: '10px', marginBottom: '32px', border: '1px solid #E8EAED' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '16px' }}>About this role</h2>
+            <div style={{ fontSize: '15px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{job.description}</div>
+          </div>
 
-      <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ background: '#F26419', color: '#fff', padding: '12px 28px', borderRadius: '6px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
-        Apply now →
-      </a>
+          <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ background: '#F26419', color: '#fff', padding: '12px 28px', borderRadius: '6px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
+            Apply now →
+          </a>
+        </>
+      )}
 
       <div style={{ padding: '24px', background: '#F9FAFB', borderRadius: '10px', border: '1px solid #E8EAED' }}>
         <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#6B7280', marginBottom: '12px', textTransform: 'uppercase' }}>Job details</h3>

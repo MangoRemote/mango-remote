@@ -27,6 +27,10 @@ interface Props {
   }>
 }
 
+function withoutContent<T extends { description?: string | null; apply_url?: string | null }>(job: T): T {
+  return { ...job, description: "", apply_url: "" }
+}
+
 export default async function JobsPage({ searchParams }: Props) {
   const params = await searchParams
   const supabase = await createClient()
@@ -162,10 +166,10 @@ export default async function JobsPage({ searchParams }: Props) {
           <>
             <PremiumGate count={lockedFreeJobs.length + premiumJobs.length} hasSearch={hasFilters} />
             {lockedFreeJobs.map(job => (
-              <JobRow key={job.id} job={job} locked />
+              <JobRow key={job.id} job={withoutContent(job)} locked />
             ))}
             {premiumJobs.map(job => (
-              <JobRow key={job.id} job={job} locked />
+              <JobRow key={job.id} job={withoutContent(job)} locked />
             ))}
           </>
         )}
