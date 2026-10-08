@@ -11,6 +11,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('jobs')
     .select('slug, published_at')
     .eq('status', 'live')
+    .eq('is_premium', false)
+    .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
 
   const base = 'https://mangoremote.com'
 
