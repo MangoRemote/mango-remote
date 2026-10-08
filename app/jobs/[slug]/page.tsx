@@ -102,7 +102,7 @@ export default async function JobDetailPage({ params }: Props) {
       {isExpired && <div style={{ background: '#FEE2E2', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', color: '#7F1D1D', fontWeight: '500' }}>⚠️ This job has expired.</div>}
 
       <Link href="/jobs" style={{ color: '#F26419', fontSize: '13px' }}>← Back</Link>
-      <h1 style={{ fontSize: '44px', fontWeight: '800', margin: '16px 0 8px' }}>{job.title}</h1>
+      <h1 style={{ fontSize: 'clamp(28px, 6vw, 44px)', fontWeight: '800', margin: '16px 0 8px' }}>{job.title}</h1>
       <p style={{ fontSize: '15px', color: '#3D4451', marginBottom: '24px' }}>{job.company?.name} {job.category?.name && `• ${job.category.name}`}</p>
 
       {locked ? (
