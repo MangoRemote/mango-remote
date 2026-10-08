@@ -84,9 +84,10 @@ const COUNTRY_FLAGS: Record<string, string> = {
   'Bangladesh': '🇧🇩', 'India': '🇮🇳',
 }
 
+const GENERIC_REGIONS = ['remote', 'global', 'worldwide', 'anywhere', 'work from anywhere']
+
 function regionLabel(r: string): { icon: string; label: string } {
   const l = r.toLowerCase()
-  if (l.includes('worldwide') || l.includes('anywhere') || l.includes('global')) return { icon: '🌍', label: 'Work from Anywhere' }
   if (l === 'apac' || l === 'asia pacific') return { icon: '🌏', label: 'APAC' }
   if (COUNTRY_FLAGS[r]) return { icon: COUNTRY_FLAGS[r], label: r }
   return { icon: '📍', label: r }
@@ -96,7 +97,7 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
   const salary = formatSalary(job)
   const companyName = job.company?.name || 'Unknown'
   const categoryName = job.category?.name || ''
-  const rawRegions = (job.region_tags || []).filter(Boolean)
+  const rawRegions = (job.region_tags || []).filter(r => r && !GENERIC_REGIONS.includes(r.toLowerCase()))
   const jobIsNew = isNew(job.published_at || job.created_at)
   const jobIsExpired = isExpired(job.published_at || job.created_at)
   const experienceLevel = getExperienceLevel(job.title)
@@ -117,7 +118,6 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
             const { icon, label } = regionLabel(r)
             return <span key={r} className="tag">{icon} {label}</span>
           })}
-          {rawRegions.length === 0 && <span className="tag">🌍 Work from Anywhere</span>}
           {experienceLevel && <span className="tag tag-level">{experienceLevel}</span>}
         </div>
       </div>
@@ -151,7 +151,6 @@ export default function JobRow({ job, locked = false, saved = false, isLoggedIn 
               const { icon, label } = regionLabel(r)
               return <span key={r} className="tag">{icon} {label}</span>
             })}
-            {rawRegions.length === 0 && <span className="tag">🌍 Work from Anywhere</span>}
             {categoryName && <span className="tag">{categoryName}</span>}
           </div>
         </div>
