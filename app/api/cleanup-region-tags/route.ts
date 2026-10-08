@@ -1,5 +1,6 @@
 import { createClient as createServerClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/admin-auth'
 
 const GENERIC = ['remote', 'global', 'worldwide', 'anywhere', 'work from anywhere']
 
@@ -17,7 +18,9 @@ function clean(tags: string[]): string[] {
   return out
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
+  const denied = requireAdmin(request)
+  if (denied) return denied
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
     process.env.SUPABASE_SERVICE_ROLE_KEY || ''

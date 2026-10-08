@@ -1,7 +1,10 @@
 import { createClient as createServerClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
+  const denied = requireAdmin(request)
+  if (denied) return denied
   let urls: string[] = []
   let slugs: string[] = []
 
