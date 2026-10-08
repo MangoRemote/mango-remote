@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
@@ -23,7 +23,7 @@
 }
 
 html {
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 15px;
@@ -106,7 +106,7 @@ a {
 }
 
 .btn-ghost {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
@@ -126,7 +126,7 @@ a {
 }
 
 .btn-primary {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: white;
@@ -198,7 +198,7 @@ a {
 
 .hero-search input {
   flex: 1;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 15px;
   border: none;
   padding: 18px 24px;
@@ -210,7 +210,7 @@ a {
 .hero-search input::placeholder { color: #9CA3AF; }
 
 .hero-search button {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 15px;
   font-weight: 600;
   background: var(--accent);
@@ -236,7 +236,7 @@ a {
 }
 
 .hero-filter-select {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: rgba(255,255,255,0.85);
@@ -376,7 +376,7 @@ a {
 
 .sidebar-search {
   width: 100%;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   border: 1px solid var(--border);
   padding: 9px 10px 9px 34px;
@@ -462,7 +462,7 @@ a {
 }
 
 .jobs-sort {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   color: var(--text);
   background: var(--bg);
@@ -746,7 +746,7 @@ a {
 
 .email-form input {
   flex: 1;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 15px;
   border: none;
   padding: 11px 16px;
@@ -759,7 +759,7 @@ a {
 .email-form input::placeholder { color: rgba(255,255,255,0.4); }
 
 .email-form button {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   font-weight: 600;
   background: var(--accent);
@@ -1029,7 +1029,7 @@ a {
 
 /* ─── Search input (standalone) ─── */
 .search-input {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 13px;
   border: 1px solid var(--border);
   padding: 7px 12px;
@@ -1119,7 +1119,7 @@ a {
 }
 
 .form-input {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 15px;
   border: 1px solid var(--border);
   padding: 10px 12px;
@@ -1769,7 +1769,7 @@ a {
   width: 100%;
   background: var(--accent);
   color: #fff;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 15px;
   font-weight: 600;
   padding: 11px;
@@ -2425,7 +2425,7 @@ textarea.form-input {
 }
 
 .email-capture-input {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   font-size: 15px;
   border: 1px solid var(--border);
   padding: 9px 14px;
