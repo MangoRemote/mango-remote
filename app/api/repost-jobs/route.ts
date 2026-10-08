@@ -22,7 +22,11 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('jobs')
-    .update({ published_at: new Date().toISOString(), status: 'live' })
+    .update({
+      published_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'live'
+    })
     .in('apply_url', apply_urls)
     .select('title, slug')
 
