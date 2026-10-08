@@ -11,15 +11,15 @@ export async function POST(request: NextRequest) {
   )
 
   try {
-    // Calculate date 40 days ago
-    const fortyDaysAgo = new Date()
-    fortyDaysAgo.setDate(fortyDaysAgo.getDate() - 40)
+    // Calculate date 35 days ago
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - 35)
 
     // Find jobs older than 40 days
     const { data: oldJobs } = await supabase
       .from('jobs')
       .select('id, title, published_at')
-      .lt('published_at', fortyDaysAgo.toISOString())
+      .lt('published_at', cutoffDate.toISOString())
 
     if (!oldJobs || oldJobs.length === 0) {
       return NextResponse.json({
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const { count, error } = await supabase
       .from('jobs')
       .delete()
-      .lt('published_at', fortyDaysAgo.toISOString())
+      .lt('published_at', cutoffDate.toISOString())
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
