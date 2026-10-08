@@ -105,7 +105,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <div className="account-upsell">
           <div className="account-upsell-inner">
             <strong>You&apos;re missing half the job board.</strong>
-            <p>Premium members see all available roles and get new jobs delivered to their inbox every week.</p>
+            <p>Premium members see every job on the board, including premium-only listings.</p>
             <Link href="/premium" className="btn-primary">See Premium plans →</Link>
           </div>
         </div>

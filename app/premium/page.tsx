@@ -36,7 +36,7 @@ export default async function PremiumPage() {
         <div className="premium-hero-overlay">
           <span className="premium-eyebrow">MangoRemote Premium</span>
           <h1>Find your remote job in Asia faster.</h1>
-          <p>Premium members access the full job board, get new roles delivered weekly, and apply before free members even see the listing.</p>
+          <p>Premium unlocks the full job board, including premium-only listings, with full descriptions and apply links on every role.</p>
 
           <div className="premium-stats">
             <div className="premium-stat">
@@ -45,8 +45,8 @@ export default async function PremiumPage() {
             </div>
             <div className="premium-stat-divider" />
             <div className="premium-stat">
-              <strong>Weekly</strong>
-              <span>New listings</span>
+              <strong>All</strong>
+              <span>Jobs unlocked</span>
             </div>
             <div className="premium-stat-divider" />
             <div className="premium-stat">
@@ -91,7 +91,7 @@ export default async function PremiumPage() {
             </div>
           </div>
         )}
-        <p className="premium-stripe-note">🔒 Secure payment via Stripe. Cancel or pause anytime.</p>
+        <p className="premium-stripe-note">🔒 Secure payment via Stripe. Cancel any time.</p>
       </div>
 
       {/* Why section */}
@@ -108,13 +108,13 @@ export default async function PremiumPage() {
             </div>
             <div className="premium-benefit">
               <div className="premium-benefit-num">02</div>
-              <strong>Apply first, get hired faster</strong>
-              <p>Early access puts you in the first wave of applicants — before the competition arrives.</p>
+              <strong>Premium-only listings</strong>
+              <p>Some roles are only listed for Premium members. Free members never see their details.</p>
             </div>
             <div className="premium-benefit">
               <div className="premium-benefit-num">03</div>
-              <strong>Jobs delivered to you</strong>
-              <p>A weekly digest of new Asia-compatible roles, straight to your inbox. No searching required.</p>
+              <strong>Full job details</strong>
+              <p>Every job you open shows the full description and a direct apply link.</p>
             </div>
           </div>
         </div>
@@ -133,13 +133,13 @@ export default async function PremiumPage() {
             </div>
             <div className="premium-benefit">
               <div className="premium-benefit-num">02</div>
-              <strong>Weekly job digest</strong>
-              <p>Every week we email you the freshest Asia-compatible roles — straight to your inbox.</p>
+              <strong>Full job details</strong>
+              <p>Full descriptions and direct apply links on every job, not just the preview.</p>
             </div>
             <div className="premium-benefit">
               <div className="premium-benefit-num">03</div>
               <strong>Cancel anytime</strong>
-              <p>No contracts. Pause or cancel from your account page whenever you like.</p>
+              <p>No contracts. Cancel any time by emailing hello@mangoremote.com.</p>
             </div>
           </div>
         </div>

@@ -50,7 +50,7 @@ export async function POST(request: Request) {
                 <p style="font-size:13px;font-weight:700;color:#f97316;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 10px">Premium membership</p>
                 <p style="font-size:15px;font-weight:600;color:#111;margin:0 0 8px;line-height:1.3">See every job. Most free members miss the best roles.</p>
                 <p style="font-size:14px;color:#555;margin:0 0 16px;line-height:1.6">
-                  Free members see 5 jobs. Premium unlocks the full board — every role, every day, before they fill.
+                  Free members see 5 jobs. Premium unlocks the full board — every role on the board.
                 </p>
                 <ul style="font-size:14px;color:#444;margin:0 0 20px;padding:0;list-style:none">
                   <li style="padding:4px 0">✓ &nbsp;Full access to every job posted</li>
