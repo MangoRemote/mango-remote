@@ -2,6 +2,19 @@ import { createClient as createServerClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin-auth'
 
+function normalizeUrl(raw: string): string {
+  try {
+    const u = new URL(raw)
+    const kept = [...u.searchParams.entries()]
+      .filter(([k]) => !/^(utm_|ref$|source$)/i.test(k))
+      .sort(([a], [b]) => a.localeCompare(b))
+    const query = kept.length ? `?${new URLSearchParams(kept).toString()}` : ''
+    return `${u.hostname.replace(/^www\./, '').toLowerCase()}${u.pathname.replace(/\/+$/, '').toLowerCase()}${query}`
+  } catch {
+    return String(raw || '').trim().toLowerCase()
+  }
+}
+
 const defaultJobs = [
   {
     title: 'Account Executive, Mid Market - North Asia',
@@ -299,14 +312,15 @@ export async function POST(request: NextRequest) {
       defaultCompanyId = newCompany?.id
     }
 
-    // Check for duplicates by apply_url
-    const { data: existingJobs } = await supabase
-      .from('jobs')
-      .select('apply_url')
-      .in('apply_url', jobs.map(j => j.apply_url))
-
-    const existingUrls = new Set(existingJobs?.map(j => j.apply_url) || [])
-    const newJobs = jobs.filter(j => !existingUrls.has(j.apply_url))
+    const { data: existingJobs } = await supabase.from('jobs').select('apply_url')
+    const existingUrls = new Set((existingJobs || []).map(j => normalizeUrl(j.apply_url)))
+    const seen = new Set<string>()
+    const newJobs = jobs.filter(j => {
+      const key = normalizeUrl(j.apply_url)
+      if (existingUrls.has(key) || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 
     if (newJobs.length === 0) {
       return NextResponse.json({ message: 'All jobs already exist', added: 0 })
