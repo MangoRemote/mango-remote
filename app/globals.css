@@ -2570,6 +2570,7 @@ textarea.form-input {
 
 .sort-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
