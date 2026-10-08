@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+add_jobs_batch5.mjs
+add_jobs_batch6.mjs
+add_jobs_sept11.mjs
+add_jobs_sept14.mjs
+add_jobs_sept14_batch2.mjs
+add_jobs_sept15.mjs
+cleanup_jobs.mjs
+expand_descriptions.mjs
+final_cleanup.mjs
+full_diagnostics.mjs
+pre_launch_audit.mjs
+scripts/dedup-now.mjs
+scripts/fetch-jobs.mjs
+scripts/fix-apply-urls.mjs
+verify_descriptions.mjs

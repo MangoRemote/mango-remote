@@ -9,21 +9,13 @@ export const metadata: Metadata = {
   title: 'My Account — MangoRemote',
 }
 
-// PREVIEW_MODE: set to true to preview without auth
-const PREVIEW_MODE = false
-const PREVIEW_USER = { email: 'sarah@example.com', created_at: '2026-01-15T00:00:00Z', id: 'preview' }
-const PREVIEW_SUB = { plan: 'premium', status: 'active', current_period_end: '2026-08-29T00:00:00Z' }
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ upgraded?: string }> }) {
   let user: User | { email: string; created_at: string; id: string } | null = null
   let sub: { plan: string; status: string; current_period_end: string } | null = null
   let savedJobs: Job[] = []
 
-  if (PREVIEW_MODE) {
-    user = PREVIEW_USER
-    sub = PREVIEW_SUB
-  } else {
-    const supabase = await createClient()
+  const supabase = await createClient()
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) redirect('/auth/login')
     user = authUser
@@ -33,7 +25,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     ])
     sub = subData
     savedJobs = ((savedData || []).map((r: { jobs: unknown }) => r.jobs).filter(Boolean)) as Job[]
-  }
 
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active'
   const params = await searchParams
