@@ -69,6 +69,30 @@ export default async function PostAJobPage() {
         </ol>
       </section>
 
+      <section className="post-job-faq">
+        <h2>Common questions</h2>
+        <details>
+          <summary>How long does my listing stay up?</summary>
+          <p>For 30 days from the day it goes live. To renew, email hello@mangoremote.com before it expires.</p>
+        </details>
+        <details>
+          <summary>How do candidates apply?</summary>
+          <p>They click through to the application link you give us. Applications go to you directly, not through MangoRemote.</p>
+        </details>
+        <details>
+          <summary>Can I change my listing after it's live?</summary>
+          <p>Yes. Email hello@mangoremote.com with the changes and we'll update it.</p>
+        </details>
+        <details>
+          <summary>Will I get a receipt?</summary>
+          <p>Yes. Your payment receipt is sent by Stripe to the email address you used to pay.</p>
+        </details>
+        <details>
+          <summary>What if my listing isn't approved?</summary>
+          <p>We'll contact you at the email on your account with the reason. For refund questions, email hello@mangoremote.com.</p>
+        </details>
+      </section>
+
       {user ? (
         <section className="post-job-form-section">
           <h2 className="post-job-form-heading">Job details</h2>
