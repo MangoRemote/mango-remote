@@ -8,7 +8,7 @@ const GA_ID = 'G-JPVNWCZHD0'
 
 export const metadata: Metadata = {
   title: 'Remote Jobs in Asia - Timezone Friendly Work from Thailand, Vietnam, Japan',
-  description: 'Find remote jobs compatible with living in Asia. Vetted roles for timezone flexibility in Thailand, Vietnam, Japan, Indonesia, Philippines & more. Browse 160+ remote opportunities.',
+  description: 'Find remote jobs compatible with living in Asia. Remote roles for timezone flexibility in Thailand, Vietnam, Japan, Indonesia, Philippines & more. Browse current remote opportunities.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'),
   icons: {
     icon: '/favicon.svg',

@@ -54,7 +54,7 @@ export async function POST(request: Request) {
                 </p>
                 <ul style="font-size:14px;color:#444;margin:0 0 20px;padding:0;list-style:none">
                   <li style="padding:4px 0">✓ &nbsp;Full access to every job posted</li>
-                  <li style="padding:4px 0">✓ &nbsp;New jobs added daily from vetted sources</li>
+                  <li style="padding:4px 0">✓ &nbsp;New jobs added regularly from company career pages</li>
                   <li style="padding:4px 0">✓ &nbsp;Weekly digest delivered to your inbox</li>
                   <li style="padding:4px 0">✓ &nbsp;Save jobs and apply when you're ready</li>
                 </ul>

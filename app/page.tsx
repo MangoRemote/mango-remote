@@ -9,7 +9,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'MangoRemote — Remote Jobs For Living in Asia',
-  description: 'Find genuinely Asia-friendly remote jobs in Thailand, Vietnam, Japan, Indonesia, Philippines, and beyond. 138 curated roles vetted for timezone compatibility.',
+  description: 'Find genuinely Asia-friendly remote jobs in Thailand, Vietnam, Japan, Indonesia, Philippines, and beyond. Remote roles checked for timezone compatibility with Asia.',
 }
 
 export const dynamic = 'force-dynamic'

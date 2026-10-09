@@ -34,7 +34,7 @@ export default function AboutPage() {
         <section className="about-block">
           <h2>Our approach</h2>
           <p>
-            MangoRemote curates remote jobs specifically for people living across Asia. Every listing is vetted for timezone compatibility, location flexibility, and genuine remote-first culture. No surprises. No "remote from our London office" jobs.
+            MangoRemote curates remote jobs specifically for people living across Asia. Every listing is reviewed for timezone compatibility and location eligibility. No surprises. No "remote from our London office" jobs.
           </p>
           <p>
             We focus on quality over quantity. Every job comes from employers who understand what true remote work means.

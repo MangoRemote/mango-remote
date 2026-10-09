@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Browse Remote Jobs - Asia Friendly Opportunities - MangoRemote',
-  description: 'Discover 160+ remote jobs vetted for timezone compatibility with Asia. Find remote work in Thailand, Vietnam, Japan, Indonesia, Philippines & across Asia. Filter by country, category & experience.',
+  description: 'Browse remote jobs chosen for timezone compatibility with Asia. Find remote work in Thailand, Vietnam, Japan, Indonesia, Philippines & across Asia. Filter by country, category & experience.',
 }
 
 interface Props {
