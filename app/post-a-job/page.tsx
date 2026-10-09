@@ -16,9 +16,11 @@ export default async function PostAJobPage() {
 
   return (
     <main className="emp">
-      <header className="emp-head">
-        <h1>Post a remote job</h1>
-        <p>Reach professionals living in Asia. One listing for a one-time $99 payment, live on MangoRemote for 30 days.</p>
+      <header className="emp-banner">
+        <div className="emp-banner-inner">
+          <h1>Post a remote job</h1>
+          <p>Reach professionals living in Asia. One listing for a one-time $99 payment, live on MangoRemote for 30 days.</p>
+        </div>
       </header>
 
       <div className="emp-offer">
