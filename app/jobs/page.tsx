@@ -56,7 +56,7 @@ export default async function JobsPage({ searchParams }: Props) {
 
   let query = supabase
     .from('jobs')
-    .select('*, company:companies(*), category:categories(*)')
+    .select('id, title, slug, employment_type, region_tags, asia_friendly, published_at, created_at, expires_at, is_premium, is_featured, salary_min, salary_max, salary_currency, company:companies(id, name, slug, logo_url), category:categories(id, name, slug)')
     .eq('status', 'live')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
@@ -111,7 +111,7 @@ export default async function JobsPage({ searchParams }: Props) {
   ])
 
   const savedIds = new Set((savedData || []).map((r: { job_id: string }) => r.job_id))
-  const allJobs = (jobs || []) as Job[]
+  const allJobs = (jobs || []) as unknown as Job[]
   const freeJobs = allJobs.filter(j => !j.is_premium)
   const premiumJobs = allJobs.filter(j => j.is_premium)
 
