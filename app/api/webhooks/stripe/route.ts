@@ -16,6 +16,18 @@ function slugify(str: string) {
     '-' + Math.random().toString(36).slice(2, 7)
 }
 
+async function findUserIdByEmail(email: string): Promise<string | null> {
+  const target = email.toLowerCase()
+  for (let page = 1; page < 1000; page++) {
+    const { data, error } = await getSupabase().auth.admin.listUsers({ page, perPage: 1000 })
+    if (error || !data?.users?.length) return null
+    const match = data.users.find(u => u.email?.toLowerCase() === target)
+    if (match) return match.id
+    if (data.users.length < 1000) return null
+  }
+  return null
+}
+
 export async function POST(request: Request) {
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')!
@@ -38,29 +50,13 @@ export async function POST(request: Request) {
       const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end
 
       // Find or create the Supabase user
-      const { data: existingUsers } = await getSupabase().auth.admin.listUsers()
-      let userId: string | null = null
-      const existing = existingUsers?.users?.find(u => u.email === email)
+      let userId: string | null = await findUserIdByEmail(email)
 
-      if (existing) {
-        userId = existing.id
-      } else {
-        // Create account and send invite email so they can set a password
-        const { data: newUser } = await getSupabase().auth.admin.createUser({
-          email,
-          email_confirm: true,
+      if (!userId) {
+        const { data: invited } = await getSupabase().auth.admin.inviteUserByEmail(email, {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/set-password`,
         })
-        if (newUser?.user) {
-          userId = newUser.user.id
-          // Send password setup link
-          await getSupabase().auth.admin.generateLink({
-            type: 'recovery',
-            email,
-            options: {
-              redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/set-password`,
-            },
-          })
-        }
+        userId = invited?.user?.id ?? null
       }
 
       if (userId) {
