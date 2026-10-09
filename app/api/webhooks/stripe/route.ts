@@ -74,7 +74,10 @@ export async function POST(request: Request) {
 
     // Job posting payment
     const userId = session.metadata?.user_id
-    const jobData = session.metadata?.job_data
+    const chunkCount = Number(session.metadata?.job_chunks || 0)
+    const jobData = chunkCount > 0
+      ? Array.from({ length: chunkCount }, (_, i) => session.metadata?.[`job_data_${i}`] || '').join('')
+      : session.metadata?.job_data
     if (session.mode === 'payment' && userId && jobData) {
       const data = JSON.parse(jobData)
       const { data: company } = await getSupabase()

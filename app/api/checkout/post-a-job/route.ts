@@ -13,6 +13,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
+  const payload = JSON.stringify(body)
+  const chunks = payload.match(/[\s\S]{1,400}/g) || []
+  if (chunks.length > 10) {
+    return NextResponse.json({ error: 'The job description is too long. Please shorten it and try again.' }, { status: 400 })
+  }
+  const jobChunks = Object.fromEntries(chunks.map((chunk, i) => [`job_data_${i}`, chunk]))
 
   const session = await getStripe().checkout.sessions.create({
     mode: 'payment',
@@ -26,7 +32,8 @@ export async function POST(request: Request) {
     customer_email: user.email,
     metadata: {
       user_id: user.id,
-      job_data: JSON.stringify(body),
+      job_chunks: String(chunks.length),
+      ...jobChunks,
     },
   })
 
