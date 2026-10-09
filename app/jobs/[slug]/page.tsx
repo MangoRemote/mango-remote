@@ -3,9 +3,26 @@ import { hasPremiumAccess } from '@/lib/access'
 import Link from 'next/link'
 import Script from 'next/script'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+const EMPLOYMENT_TYPES: Record<string, string> = {
+  'full-time': 'FULL_TIME', 'part-time': 'PART_TIME', 'contract': 'CONTRACTOR',
+  'freelance': 'CONTRACTOR', 'temporary': 'TEMPORARY', 'internship': 'INTERN',
+}
+
+function employmentTypeFor(raw: string | null): string {
+  return EMPLOYMENT_TYPES[(raw || '').toLowerCase()] || 'FULL_TIME'
+}
+
+const COUNTRY_NAMES = ['Japan', 'Vietnam', 'Thailand', 'Indonesia', 'Philippines', 'Malaysia', 'Singapore', 'South Korea', 'Taiwan', 'Hong Kong', 'China', 'Cambodia', 'Myanmar', 'Sri Lanka', 'India', 'Australia', 'Canada', 'United States', 'United Kingdom', 'Ireland', 'Poland', 'Mexico']
+
+function countriesFor(tags: string[] | null) {
+  const found = (tags || []).filter(t => COUNTRY_NAMES.includes(t))
+  return found.length ? found.map(name => ({ '@type': 'Country', name })) : undefined
 }
 
 const LIFETIME_MS = 35 * 24 * 60 * 60 * 1000
@@ -50,15 +67,7 @@ export default async function JobDetailPage({ params }: Props) {
   const { slug } = await params
   const job = await loadJob(slug)
 
-  if (!job) {
-    return (
-      <main style={{ padding: '40px 28px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
-        <h1>Job not found</h1>
-        <p>This job may have expired or been removed.</p>
-        <Link href="/jobs">← Back to all jobs</Link>
-      </main>
-    )
-  }
+  if (!job) notFound()
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -79,14 +88,9 @@ export default async function JobDetailPage({ params }: Props) {
       "@type": "Organization",
       "name": job.company?.name || "Unknown Company"
     },
-    "jobLocation": {
-      "@type": "Place",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "Global"
-      }
-    },
-    "employmentType": job.employment_type || "FULL_TIME",
+    "jobLocationType": "TELECOMMUTE",
+    "applicantLocationRequirements": countriesFor(job.region_tags),
+    "employmentType": employmentTypeFor(job.employment_type),
     "datePosted": job.published_at,
     "validThrough": job.expires_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
   }
