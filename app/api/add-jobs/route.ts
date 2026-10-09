@@ -312,12 +312,19 @@ export async function POST(request: NextRequest) {
       defaultCompanyId = newCompany?.id
     }
 
-    const { data: existingJobs } = await supabase.from('jobs').select('apply_url')
+    const { data: existingJobs } = await supabase.from('jobs').select('apply_url, title, company_id')
     const existingUrls = new Set((existingJobs || []).map(j => normalizeUrl(j.apply_url)))
+    const titleKey = (companyId: string | null, title: string) => `${companyId}|${title.trim().toLowerCase()}`
+    const existingTitles = new Set((existingJobs || []).map(j => titleKey(j.company_id, j.title)))
+    const slugs = [...new Set(jobs.map(j => j.company_id).filter(Boolean))]
+    const { data: companyRows } = await supabase.from('companies').select('id, slug').in('slug', slugs)
+    const companyIdBySlug = new Map((companyRows || []).map(c => [c.slug, c.id]))
     const seen = new Set<string>()
     const newJobs = jobs.filter(j => {
       const key = normalizeUrl(j.apply_url)
-      if (existingUrls.has(key) || seen.has(key)) return false
+      const companyId = companyIdBySlug.get(j.company_id) ?? null
+      const sameRole = companyId ? existingTitles.has(titleKey(companyId, j.title)) : false
+      if (existingUrls.has(key) || seen.has(key) || sameRole) return false
       seen.add(key)
       return true
     })
