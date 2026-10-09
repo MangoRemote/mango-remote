@@ -6,8 +6,8 @@ import type { Metadata } from 'next'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Post Remote Job in Asia - Reach Remote Workers - MangoRemote',
-  description: 'Post your remote job to reach professionals in Asia. List positions for Thailand, Vietnam, Japan, Indonesia & across Asia. One-off payment, usually approved within 24 hours.',
+  title: 'Post a Remote Job for Asia - MangoRemote',
+  description: 'List your remote job for professionals living in Asia. One listing, $99, live for 30 days.',
 }
 
 export default async function PostAJobPage() {
@@ -19,72 +19,71 @@ export default async function PostAJobPage() {
     .eq('status', 'live')
 
   return (
-    <div className="post-page">
-      <div className="post-job-hero">
-        <span className="post-job-eyebrow">Post a Job</span>
-        <h1>Stop sifting through candidates<br />in the <em>wrong timezone.</em></h1>
-        <p>Every visitor here is actively looking for Work from Anywhere or APAC roles. No wasted applications, no timezone mismatches — just people who can actually do the job.</p>
+    <main className="post-page">
+      <section className="post-job-hero">
+        <p className="post-job-eyebrow">For employers</p>
+        <h1>Hire remote talent based in Asia</h1>
+        <p className="post-job-lede">
+          MangoRemote lists remote roles for professionals living in Thailand, Vietnam, Japan, Indonesia, the Philippines and across Asia.
+          One listing, one payment, live for 30 days.
+        </p>
         <div className="post-job-stats">
           <div className="post-job-stat">
-            <strong>{jobCount || 0}+</strong>
-            <span>Live roles right now</span>
+            <strong>{jobCount || 0}</strong>
+            <span>Live roles today</span>
           </div>
           <div className="post-job-stat-divider" />
           <div className="post-job-stat">
             <strong>30 days</strong>
-            <span>Your listing stays live</span>
+            <span>Listing duration</span>
           </div>
           <div className="post-job-stat-divider" />
           <div className="post-job-stat">
-            <strong>24 hrs</strong>
-            <span>Typical review time</span>
+            <strong>$99</strong>
+            <span>One-time payment</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="post-job-pricing-card">
+      <section className="post-job-pricing-card">
         <div className="post-job-price-row">
           <div>
-            <div className="post-job-price">$99<span>one-off</span></div>
-            <div className="premium-plan-note">Listing goes live after review — usually within 24 hours</div>
+            <div className="post-job-price">$99<span> one-time</span></div>
+            <p className="premium-plan-note">Your listing is reviewed before it goes live.</p>
           </div>
-          <div className="post-job-badge">30 days live</div>
+          <div className="post-job-badge">30 days</div>
         </div>
         <ul className="post-job-features">
-          <li><span className="post-job-check">✓</span> Job live for 30 days</li>
-          <li><span className="post-job-check">✓</span> Seen by remote professionals targeting Asia specifically</li>
-          <li><span className="post-job-check">✓</span> Listed directly — no aggregator middlemen</li>
-          <li><span className="post-job-check">✓</span> Shown to both free and premium members</li>
+          <li><span className="post-job-check">✓</span> Listed for 30 days</li>
+          <li><span className="post-job-check">✓</span> Shown to free and Premium members</li>
+          <li><span className="post-job-check">✓</span> Applicants apply on your own application page</li>
         </ul>
-      </div>
+      </section>
 
-      <div className="post-job-context">
-        <div className="post-job-context-inner">
-          <h2>Who's on here</h2>
-          <p>
-            {jobCount || 0}+ roles live right now from companies actually hiring for Asia timezones. Remote workers here aren't browsing LinkedIn for fun—they're specifically looking for roles that fit their timezone and location. No wasted applications.
-          </p>
-          <p>
-            Your job stays visible for 30 days. People bookmark it, come back. It doesn't get buried in 24 hours like other boards. And they apply directly to you—no middleman, no lost emails.
-          </p>
-        </div>
-      </div>
+      <section className="post-job-steps">
+        <h2>How it works</h2>
+        <ol>
+          <li><strong>Add the role.</strong> Fill in the details below. It takes a few minutes.</li>
+          <li><strong>Pay securely.</strong> Payment is taken by Stripe. We never see your card details.</li>
+          <li><strong>Go live.</strong> We review the listing and publish it on MangoRemote.</li>
+        </ol>
+      </section>
 
       {user ? (
-        <>
+        <section className="post-job-form-section">
           <h2 className="post-job-form-heading">Job details</h2>
           <PostJobForm />
-        </>
+        </section>
       ) : (
-        <div className="post-job-signin-prompt">
+        <section className="post-job-signin-prompt">
           <h2>Sign in to post a job</h2>
-          <p>You&apos;ll need an account so you can manage your listing and see when it goes live.</p>
+          <p>An account lets you track your listing and see when it goes live.</p>
           <div className="post-job-signin-actions">
             <Link href="/auth/login?next=/post-a-job" className="btn-primary">Sign in</Link>
             <Link href="/auth/signup?next=/post-a-job" className="btn-ghost">Create an account</Link>
           </div>
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   )
 }
