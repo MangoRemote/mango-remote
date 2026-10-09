@@ -54,9 +54,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                   Renews {new Date(sub.current_period_end).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               )}
-              <a href="mailto:hello@mangoremote.com?subject=Cancel subscription" className="account-cancel-link">
-                Cancel subscription
-              </a>
+              <form action="/api/billing-portal" method="post">
+                <button type="submit" className="account-cancel-link">
+                  Manage or cancel subscription
+                </button>
+              </form>
             </>
           ) : (
             <>
