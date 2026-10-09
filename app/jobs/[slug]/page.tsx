@@ -129,6 +129,7 @@ export default async function JobDetailPage({ params }: Props) {
           <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ background: '#F26419', color: '#fff', padding: '12px 28px', borderRadius: '6px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
             Apply now →
           </a>
+          <p style={{ fontSize: '13px', color: '#6B7280', marginTop: '-20px', marginBottom: '32px' }}>You apply on the employer's website. MangoRemote does not employ or guarantee this role.</p>
         </>
       )}
 
