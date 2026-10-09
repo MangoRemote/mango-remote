@@ -2,6 +2,31 @@ import { createClient as createServerClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin-auth'
 
+const CATEGORY_RULES: [RegExp, string][] = [
+  [/customer success/i, 'customer-success'],
+  [/sales|account executive|account manager|business development|\bbdm\b|\bsdr\b|pre-?sales|solutions? (engineer|consultant)|partner(ship)? manager/i, 'sales'],
+  [/recruit|talent|\bhr\b|people operations/i, 'hr-recruiting'],
+  [/paralegal|legal|counsel|lawyer|litigation/i, 'legal'],
+  [/data (engineer|analyst|scientist)|machine learning|\bml\b/i, 'data'],
+  [/product (manager|owner|lead)/i, 'product'],
+  [/technical writer|writer|documentation|editor/i, 'technical-writing'],
+  [/technical support|support|technician|help ?desk|service desk|onboarding/i, 'support'],
+  [/marketing|brand|community|social|growth|content|storyteller/i, 'marketing'],
+  [/designer|design\b|\bux\b|\bui\b/i, 'design'],
+  [/operations|\bops\b/i, 'operations'],
+  [/financ|accountant|bookkeep/i, 'finance'],
+  [/project manager|program manager|scrum/i, 'project-management'],
+  [/engineer|developer|devops|\bsre\b|architect|\bqa\b|tester/i, 'engineering'],
+  [/manager|director|head of|\bvp\b|chief/i, 'management'],
+]
+
+function inferCategorySlug(title: string): string | null {
+  for (const [pattern, slug] of CATEGORY_RULES) {
+    if (pattern.test(title)) return slug
+  }
+  return null
+}
+
 function normalizeUrl(raw: string): string {
   try {
     const u = new URL(raw)
@@ -333,20 +358,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'All jobs already exist', added: 0 })
     }
 
-    const jobsToInsert = newJobs.map(job => ({
-      company_id: defaultCompanyId,
-      title: job.title,
-      slug: job.slug,
-      description: job.description,
-      apply_url: job.apply_url,
-      employment_type: job.employment_type,
-      region_tags: job.region_tags,
-      asia_friendly: job.asia_friendly,
-      status: job.status,
-      source: job.source,
-      category_id: job.category_id,
-      published_at: new Date().toISOString()
-    }))
+    const { data: categoryRows } = await supabase.from('categories').select('id, slug')
+    const categoryIdBySlug = new Map((categoryRows || []).map(c => [c.slug, c.id]))
+    const { count: premiumCount } = await supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('status', 'live').eq('is_premium', true)
+    const { count: liveCount } = await supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('status', 'live')
+    let premiumSoFar = premiumCount || 0
+    let liveSoFar = liveCount || 0
+
+    const jobsToInsert = newJobs.map(job => {
+      const slug = inferCategorySlug(job.title)
+      const isPremium = typeof job.is_premium === 'boolean' ? job.is_premium : premiumSoFar / Math.max(liveSoFar, 1) < 0.5
+      liveSoFar += 1
+      if (isPremium) premiumSoFar += 1
+      return {
+        company_id: defaultCompanyId,
+        title: job.title,
+        slug: job.slug,
+        description: job.description,
+        apply_url: job.apply_url,
+        employment_type: job.employment_type,
+        region_tags: job.region_tags,
+        asia_friendly: job.asia_friendly,
+        status: job.status,
+        source: job.source,
+        category_id: job.category_id || (slug && categoryIdBySlug.get(slug)) || null,
+        is_premium: isPremium,
+        published_at: new Date().toISOString()
+      }
+    })
 
     const { data, error } = await supabase
       .from('jobs')
