@@ -69,6 +69,21 @@ export default async function PostAJobPage() {
         </ol>
       </section>
 
+      {user ? (
+        <section className="post-job-form-section">
+          <h2 className="post-job-form-heading">Job details</h2>
+          <PostJobForm />
+        </section>
+      ) : (
+        <section className="post-job-signin-prompt">
+          <h2>Sign in to post a job</h2>
+          <p>An account lets you track your listing and see when it goes live.</p>
+          <div className="post-job-signin-actions">
+            <Link href="/auth/login?next=/post-a-job" className="btn-primary">Sign in</Link>
+            <Link href="/auth/signup?next=/post-a-job" className="btn-ghost">Create an account</Link>
+          </div>
+        </section>
+      )}
       <section className="post-job-faq">
         <h2>Common questions</h2>
         <details>
@@ -93,21 +108,6 @@ export default async function PostAJobPage() {
         </details>
       </section>
 
-      {user ? (
-        <section className="post-job-form-section">
-          <h2 className="post-job-form-heading">Job details</h2>
-          <PostJobForm />
-        </section>
-      ) : (
-        <section className="post-job-signin-prompt">
-          <h2>Sign in to post a job</h2>
-          <p>An account lets you track your listing and see when it goes live.</p>
-          <div className="post-job-signin-actions">
-            <Link href="/auth/login?next=/post-a-job" className="btn-primary">Sign in</Link>
-            <Link href="/auth/signup?next=/post-a-job" className="btn-ghost">Create an account</Link>
-          </div>
-        </section>
-      )}
     </main>
   )
 }
