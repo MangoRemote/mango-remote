@@ -2673,3 +2673,31 @@ textarea.form-input {
 .jobs-empty a {
   color: var(--accent);
 }
+
+.emp { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; color: var(--text); }
+.emp-head h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 6px; }
+.emp-head p { font-size: 16px; color: var(--muted); line-height: 1.5; max-width: 620px; }
+.emp-offer { display: grid; grid-template-columns: 300px 1fr; gap: 40px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+.emp-price-box { border: 1px solid var(--border); border-radius: 6px; padding: 20px; align-self: start; }
+.emp-price { font-size: 40px; font-weight: 700; line-height: 1; }
+.emp-price-note { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.emp-included { list-style: none; margin: 16px 0; padding: 0; font-size: 15px; }
+.emp-included li { padding: 6px 0 6px 22px; border-top: 1px solid var(--border); position: relative; }
+.emp-included li::before { content: '✓'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+.emp-cta { display: block; text-align: center; background: var(--accent); color: #fff; font-weight: 600; font-size: 16px; padding: 11px 16px; border-radius: 6px; text-decoration: none; }
+.emp-small { font-size: 13px; color: var(--subtle); margin-top: 10px; text-align: center; }
+.emp-steps h2, .emp-faq h2, .emp-form h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.emp-steps ol { padding-left: 20px; margin: 0; font-size: 15px; color: var(--muted); line-height: 1.5; }
+.emp-steps li { margin-bottom: 12px; }
+.emp-steps strong { color: var(--text); }
+.emp-faq { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+.emp-faq dt { font-weight: 600; font-size: 15px; margin-top: 14px; }
+.emp-faq dd { font-size: 15px; color: var(--muted); margin: 4px 0 0; line-height: 1.5; }
+.emp-faq a, .emp-contact a, .emp-small a { color: var(--accent); }
+.emp-form { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+.emp-contact { margin-top: 40px; font-size: 14px; color: var(--subtle); }
+@media (max-width: 720px) {
+  .emp { padding: 24px 16px 48px; }
+  .emp-head h1 { font-size: 22px; }
+  .emp-offer { grid-template-columns: 1fr; gap: 24px; }
+}
