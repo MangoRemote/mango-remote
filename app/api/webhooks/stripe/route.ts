@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
       if (!userId) {
         const { data: invited } = await getSupabase().auth.admin.inviteUserByEmail(email, {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/set-password`,
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/auth/set-password`,
         })
         userId = invited?.user?.id ?? null
       }

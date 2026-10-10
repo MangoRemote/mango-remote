@@ -20,8 +20,8 @@ export async function POST() {
       },
       quantity: 1,
     }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/done-for-you?success=1`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/done-for-you`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/done-for-you?success=1`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/done-for-you`,
     customer_email: user?.email,
     metadata: user ? { user_id: user.id } : {},
   })

@@ -20,7 +20,7 @@ export async function POST() {
 
   const session = await getStripe().billingPortal.sessions.create({
     customer: sub.stripe_customer_id,
-    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account`,
+    return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/account`,
   })
   return NextResponse.redirect(session.url, 303)
 }

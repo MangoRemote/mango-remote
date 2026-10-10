@@ -35,8 +35,8 @@ export async function POST(request: Request) {
       price: process.env.STRIPE_JOB_POSTING_PRICE_ID!,
       quantity: 1,
     }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/post-a-job/success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/post-a-job`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/post-a-job/success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/post-a-job`,
     customer_email: user.email,
     metadata: {
       user_id: user.id,

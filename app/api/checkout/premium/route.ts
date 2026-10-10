@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/welcome`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/premium`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/welcome`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://mangoremote.com'}/premium`,
     // Stripe collects the email — we create the account after payment
     billing_address_collection: 'auto',
     metadata: { plan },
