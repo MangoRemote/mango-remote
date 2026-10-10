@@ -17,6 +17,7 @@ function LoginForm() {
   const [signupSent, setSignupSent] = useState(false)
 
   useEffect(() => {
+    if (searchParams.get('error') === 'link_expired') setError('That link has expired or was already used. Sign in, or use "Forgot password" to get a new one.')
     if (searchParams.get('signup') === '1') setMode('signup')
   }, [searchParams])
 
