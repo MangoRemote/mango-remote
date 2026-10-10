@@ -16,12 +16,13 @@ export default function SaveButton({ jobId, initialSaved }: Props) {
     e.stopPropagation()
     setLoading(true)
     const method = saved ? 'DELETE' : 'POST'
-    await fetch('/api/saved-jobs', {
+    const res = await fetch('/api/saved-jobs', {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job_id: jobId }),
     })
-    setSaved(!saved)
+    if (res.ok) setSaved(!saved)
+    else alert('Could not update your saved jobs. Please try again.')
     setLoading(false)
   }
 
