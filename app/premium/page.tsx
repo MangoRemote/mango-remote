@@ -92,7 +92,7 @@ export default async function PremiumPage() {
             </div>
           </div>
         )}
-        <p className="premium-stripe-note">🔒 Secure payment via Stripe. Cancel any time. Premium gives access to listings and job details; it does not guarantee a job or an interview.</p>
+        <p className="premium-stripe-note">🔒 Secure payment via Stripe. Cancel any time. Premium gives access to listings and job details; it does not guarantee a job or an interview. <a href="/terms">Terms apply</a>.</p>
       </div>
 
       {/* Why section */}

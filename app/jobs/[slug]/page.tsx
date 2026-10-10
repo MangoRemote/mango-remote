@@ -144,6 +144,9 @@ export default async function JobDetailPage({ params }: Props) {
           {job.expires_at && <li><strong>Expires:</strong> {new Date(job.expires_at).toLocaleDateString()}</li>}
         </ul>
       </div>
+      <p style={{ fontSize: '13px', color: '#6B7280', marginTop: '16px' }}>
+        Something wrong with this listing? <a href={`mailto:hello@mangoremote.com?subject=${encodeURIComponent('Report job: ' + job.title + ' (' + job.slug + ')')}`} style={{ color: '#F26419' }}>Report it</a>.
+      </p>
     </main>
   )
 }

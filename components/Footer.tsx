@@ -47,7 +47,7 @@ export default function Footer() {
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} MangoRemote. All rights reserved.</span>
+        <span>© {new Date().getFullYear()} MangoRemote. All rights reserved. Contact: <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a> · <a href="mailto:hello@mangoremote.com?subject=Report%20a%20job">Report a job</a></span>
         <div style={{ display: 'flex', gap: 16 }}>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>

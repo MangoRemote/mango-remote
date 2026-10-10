@@ -140,6 +140,11 @@ function LoginForm() {
             </div>
           )}
           {error && <div className="form-error">{error}</div>}
+          {mode === 'signup' && (
+            <p style={{ fontSize: 13, color: 'var(--subtle)', margin: '0 0 12px' }}>
+              By creating an account you agree to our <a href="/terms" style={{ color: 'var(--accent)' }}>Terms</a> and <a href="/privacy" style={{ color: 'var(--accent)' }}>Privacy Policy</a>.
+            </p>
+          )}
           <button type="submit" className="btn-primary auth-submit" disabled={loading}>
             {loading ? '...' : mode === 'login' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
           </button>
