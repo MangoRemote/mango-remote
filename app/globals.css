@@ -2710,3 +2710,22 @@ textarea.form-input {
   .emp-grid { grid-template-columns: 1fr; gap: 24px; }
   .emp-price { font-size: 42px; }
 }
+
+.emp-photo { position: relative; height: 220px; border-radius: 8px; background: linear-gradient(rgba(17,19,24,0.35), rgba(17,19,24,0.7)), url('/hero-a.jpg') center 40% / cover no-repeat; display: flex; align-items: flex-end; padding: 28px; }
+.emp-photo-text h1 { font-size: 32px; font-weight: 700; color: #fff; margin: 0 0 6px; letter-spacing: -0.3px; }
+.emp-photo-text p { font-size: 16px; color: rgba(255,255,255,0.9); margin: 0; }
+.emp-preview { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.emp-preview h2 { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+.emp-preview-hint { font-size: 14px; color: var(--subtle); margin: 0 0 14px; }
+.emp-preview-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.emp-preview-fields input { font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; }
+.emp-preview-fields input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.emp-preview-card { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; padding: 14px 16px; background: #F9FAFB; }
+.emp-preview-title { font-size: 17px; font-weight: 700; }
+.emp-preview-company { font-size: 14px; color: var(--muted); margin-top: 2px; }
+.emp-preview-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .emp-photo { height: 180px; padding: 20px; }
+  .emp-photo-text h1 { font-size: 26px; }
+  .emp-preview-fields { grid-template-columns: 1fr; }
+}

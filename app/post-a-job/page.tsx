@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import PostJobForm from '@/components/PostJobForm'
+import EmployerPreview from '@/components/EmployerPreview'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -16,9 +17,11 @@ export default async function PostAJobPage() {
 
   return (
     <main className="emp">
-      <div className="emp-top">
-        <h1>Post a job</h1>
-        <p>Reach remote professionals living in Asia and around the world.</p>
+      <div className="emp-photo">
+        <div className="emp-photo-text">
+          <h1>Post a job</h1>
+          <p>Reach remote professionals living in Asia and around the world.</p>
+        </div>
       </div>
 
       <div className="emp-grid">
@@ -51,6 +54,8 @@ export default async function PostAJobPage() {
           </ol>
         </section>
       </div>
+
+      <EmployerPreview />
 
       <section className="emp-section">
         <h2>Questions</h2>
