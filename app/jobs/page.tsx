@@ -58,7 +58,6 @@ export default async function JobsPage({ searchParams }: Props) {
     .from('jobs')
     .select('id, title, slug, employment_type, region_tags, asia_friendly, published_at, created_at, expires_at, is_premium, is_featured, salary_min, salary_max, salary_currency, company:companies(id, name, slug, logo_url), category:categories(id, name, slug)')
     .eq('status', 'live')
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
 
   // Sort
