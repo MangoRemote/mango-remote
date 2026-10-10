@@ -61,7 +61,7 @@ export default function AdminJobForm({ categories, companies, initialJob }: Prop
       is_featured: form.is_featured,
       asia_friendly: form.asia_friendly,
       status: form.status,
-      published_at: form.status === 'live' ? new Date().toISOString() : null,
+      published_at: form.status === 'live' ? (initialJob?.published_at || new Date().toISOString()) : (initialJob?.published_at ?? null),
       expires_at: form.status === 'live' ? new Date(Date.now() + 30 * 86400000).toISOString() : null,
     }
 

@@ -13,8 +13,12 @@ export default function AdminJobTable({ jobs: initialJobs }: Props) {
 
   const update = async (id: string, patch: Partial<Job>) => {
     const supabase = createClient()
-    await supabase.from('jobs').update(patch).eq('id', id)
-    setJobs(prev => prev.map(j => j.id === id ? { ...j, ...patch } : j))
+    const current = jobs.find(j => j.id === id)
+    const publishPatch = patch.status === 'live' && !current?.published_at ? { published_at: new Date().toISOString() } : {}
+    const full = { ...patch, ...publishPatch }
+    const { error } = await supabase.from('jobs').update(full).eq('id', id)
+    if (error) { alert(`Could not save: ${error.message}`); return }
+    setJobs(prev => prev.map(j => j.id === id ? { ...j, ...full } : j))
   }
 
   const deleteJob = async (id: string) => {

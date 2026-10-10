@@ -20,7 +20,13 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
   const { job_id } = await request.json()
-  await supabase.from('saved_jobs').upsert({ user_id: user.id, job_id }, { onConflict: 'user_id,job_id' })
+  const { data: existing, error: findErr } = await supabase
+    .from('saved_jobs').select('id').eq('user_id', user.id).eq('job_id', job_id).maybeSingle()
+  if (findErr) return NextResponse.json({ error: findErr.message }, { status: 500 })
+  if (!existing) {
+    const { error } = await supabase.from('saved_jobs').insert({ user_id: user.id, job_id })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }
@@ -31,7 +37,8 @@ export async function DELETE(request: Request) {
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
   const { job_id } = await request.json()
-  await supabase.from('saved_jobs').delete().eq('user_id', user.id).eq('job_id', job_id)
+  const { error } = await supabase.from('saved_jobs').delete().eq('user_id', user.id).eq('job_id', job_id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ ok: true })
 }
