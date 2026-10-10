@@ -1,9 +1,24 @@
 -- MangoRemote security fixes. Run once in the Supabase SQL editor. Safe to re-run.
+-- Removes every existing policy on the sensitive tables, then recreates only the ones that should exist.
 
--- 1. Premium job content: only readable through the public API by active premium members or admins.
-drop policy if exists "Public read live jobs" on jobs;
-drop policy if exists "Public read free live jobs" on jobs;
-drop policy if exists "Premium members read premium jobs" on jobs;
+-- 1. Remove all existing row policies on sensitive tables (including any created outside this project).
+do $$
+declare r record;
+begin
+  for r in select schemaname, tablename, policyname from pg_policies
+           where schemaname = 'public' and tablename in ('jobs', 'users', 'subscriptions', 'saved_jobs', 'employer_postings')
+  loop
+    execute format('drop policy if exists %I on %I.%I', r.policyname, r.schemaname, r.tablename);
+  end loop;
+end $$;
+
+alter table jobs enable row level security;
+alter table users enable row level security;
+alter table subscriptions enable row level security;
+alter table saved_jobs enable row level security;
+alter table employer_postings enable row level security;
+
+-- 2. Jobs: free live jobs are public; premium live jobs only for active premium members; admins manage everything.
 create policy "Public read free live jobs" on jobs for select
   using (status = 'live' and is_premium = false);
 create policy "Premium members read premium jobs" on jobs for select
@@ -11,24 +26,34 @@ create policy "Premium members read premium jobs" on jobs for select
     select 1 from subscriptions s
     where s.user_id = auth.uid() and s.plan = 'premium' and s.status = 'active'
   ));
+create policy "Admins manage jobs" on jobs for all
+  using (exists (select 1 from users u where u.id = auth.uid() and u.role = 'admin'))
+  with check (exists (select 1 from users u where u.id = auth.uid() and u.role = 'admin'));
 
--- 2. Subscriptions: users can read their own row only. Only the server (service role, used by the Stripe webhook) can write.
-drop policy if exists "Service role manages subscriptions" on subscriptions;
+-- 3. Users: each user reads and updates only their own row. Admin role is never user-writable (see grants below).
+create policy "Users read own record" on users for select
+  using (id = auth.uid());
+create policy "Users update own record" on users for update
+  using (id = auth.uid()) with check (id = auth.uid());
+
+-- 4. Subscriptions: users read their own row only. Only the server (service role, used by the Stripe webhook) writes.
+create policy "Users read own subscription" on subscriptions for select
+  using (user_id = auth.uid());
+
+-- 5. Saved jobs: each user manages only their own rows.
+create policy "Users manage own saved jobs" on saved_jobs for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- 6. Employer postings: users read their own; only the server writes.
+create policy "Users read own postings" on employer_postings for select
+  using (user_id = auth.uid());
+
+-- 7. Column and table grants: remove write rights a user should not have.
 revoke insert, update, delete on subscriptions from anon, authenticated;
-
--- 3. Users: remove table-wide write rights, then grant back only the columns a user may change.
---    role is never granted, so it cannot be set by a user.
+revoke insert, update, delete on employer_postings from anon, authenticated;
 revoke insert, update, delete on users from anon, authenticated;
 grant insert (id, email, name) on users to authenticated;
 grant update (name) on users to authenticated;
-
--- 4. Saved jobs: each user sees and changes only their own rows.
-alter table saved_jobs enable row level security;
-drop policy if exists "Users manage own saved jobs" on saved_jobs;
-create policy "Users manage own saved jobs" on saved_jobs for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
 revoke all on saved_jobs from anon;
-
--- 5. Jobs and companies: anonymous and signed-in users cannot write. Admin writes go through the admin policy.
 revoke insert, update, delete on jobs from anon;
 revoke insert, update, delete on companies from anon, authenticated;
