@@ -25,6 +25,7 @@ export default async function PremiumPage() {
     .from('jobs')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'live')
+    .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
   const jobStat = jobCount ? `${jobCount}+` : '30+'
 
   return (
