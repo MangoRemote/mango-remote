@@ -55,6 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${job.title} at ${job.company?.name} — MangoRemote`,
     description,
+    alternates: { canonical: `https://mangoremote.com/jobs/${job.slug}` },
     openGraph: {
       title: `${job.title} — MangoRemote`,
       description,

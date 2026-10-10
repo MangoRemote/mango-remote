@@ -69,11 +69,12 @@ export default async function JobsPage({ searchParams }: Props) {
   }
 
   if (params.q) {
-    query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
+    const term = params.q.replace(/[,()*%\\]/g, ' ').trim()
+    if (term) query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`)
   }
   if (params.category) {
     const { data: cat } = await supabase.from('categories').select('id')
-      .or(`slug.eq.${params.category},slug.ilike.${params.category.toLowerCase()}`)
+      .or(`slug.eq.${params.category.replace(/[,()*%\\]/g, '')},slug.ilike.${params.category.replace(/[,()*%\\]/g, '').toLowerCase()}`)
       .single()
     if (cat) query = query.eq('category_id', cat.id)
   }
