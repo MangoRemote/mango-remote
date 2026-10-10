@@ -60,15 +60,28 @@ export async function POST(request: Request) {
       }
 
       if (userId) {
-        await getSupabase().from('subscriptions').upsert({
-          user_id: userId,
+        const { data: existing, error: findErr } = await getSupabase()
+          .from('subscriptions').select('id, stripe_subscription_id, status').eq('user_id', userId).maybeSingle()
+        if (findErr) return NextResponse.json({ error: findErr.message }, { status: 500 })
+
+        if (existing?.status === 'active' && existing.stripe_subscription_id && existing.stripe_subscription_id !== subId) {
+          console.error(`Duplicate premium purchase for user ${userId}: existing ${existing.stripe_subscription_id}, new ${subId}. Needs manual review.`)
+          return NextResponse.json({ received: true, duplicate: true })
+        }
+
+        const values = {
           stripe_customer_id: session.customer as string,
           stripe_subscription_id: subId,
           plan: 'premium',
-          billing_interval: plan,
           status: 'active',
           current_period_end: new Date(periodEnd * 1000).toISOString(),
-        }, { onConflict: 'user_id' })
+        }
+        const { error: saveErr } = existing
+          ? await getSupabase().from('subscriptions').update(values).eq('id', existing.id)
+          : await getSupabase().from('subscriptions').insert({ user_id: userId, ...values })
+        if (saveErr) return NextResponse.json({ error: saveErr.message }, { status: 500 })
+      } else {
+        return NextResponse.json({ error: 'Could not find or create a user for this payment' }, { status: 500 })
       }
     }
 
