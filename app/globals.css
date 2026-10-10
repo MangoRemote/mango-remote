@@ -2729,3 +2729,6 @@ textarea.form-input {
   .emp-photo-text h1 { font-size: 26px; }
   .emp-preview-fields { grid-template-columns: 1fr; }
 }
+
+.emp-trust { font-size: 13px; color: var(--subtle); line-height: 1.5; margin: 14px 0 0; padding-top: 14px; border-top: 1px solid var(--border); }
+.emp-trust a { color: var(--accent); }

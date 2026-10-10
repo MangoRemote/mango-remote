@@ -42,6 +42,11 @@ export default async function PostAJobPage() {
             <Link href="/auth/login?next=/post-a-job" className="emp-cta">Sign in to post your job — $99</Link>
           )}
           {!user && <p className="emp-signin">New here? <Link href="/auth/signup?next=/post-a-job">Create an account</Link></p>}
+          <p className="emp-trust">
+            Payment is taken securely by Stripe. We never see your card details.
+            Read our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+            Questions? <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a>
+          </p>
         </section>
 
         <section className="emp-steps">
