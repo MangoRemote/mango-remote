@@ -2676,33 +2676,37 @@ textarea.form-input {
 
 
 
-.emp { color: var(--text); }
-.emp-band { background: linear-gradient(rgba(17,19,24,0.6), rgba(17,19,24,0.75)), url('/hero-a.jpg') center 40% / cover no-repeat; color: #fff; text-align: center; padding: 56px 20px 48px; }
-.emp-band h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 8px; color: #fff; }
-.emp-band p { font-size: 16px; color: rgba(255,255,255,0.88); margin: 0 auto; max-width: 520px; line-height: 1.5; }
-.emp-wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-.emp-price-card { margin-top: -28px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 28px 28px 24px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-.emp-price { font-size: 48px; font-weight: 700; line-height: 1; }
-.emp-period { font-size: 15px; color: var(--muted); margin-top: 6px; }
-.emp-included { list-style: none; margin: 20px auto; padding: 0; max-width: 360px; text-align: left; font-size: 15px; }
-.emp-included li { padding: 8px 0 8px 26px; border-top: 1px solid var(--border); position: relative; }
-.emp-included li::before { content: '✓'; position: absolute; left: 2px; color: var(--accent); font-weight: 700; }
-.emp-cta { display: block; background: var(--accent); color: #fff; font-weight: 600; font-size: 16px; padding: 12px 16px; border-radius: 6px; text-decoration: none; }
-.emp-signin { font-size: 14px; color: var(--subtle); margin: 12px 0 0; }
-.emp-section { margin-top: 40px; }
-.emp-section h2, .emp-form h2 { font-size: 18px; font-weight: 700; margin: 0 0 14px; text-align: center; }
-.emp-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: step; }
-.emp-steps li { border-top: 2px solid var(--accent); padding-top: 12px; font-size: 14px; color: var(--muted); line-height: 1.5; }
-.emp-steps strong { display: block; color: var(--text); font-size: 15px; margin-bottom: 4px; }
-.emp-section dt { font-weight: 600; font-size: 15px; margin-top: 14px; }
-.emp-section dd { font-size: 15px; color: var(--muted); margin: 3px 0 0; line-height: 1.5; }
-.emp-section a, .emp-foot a, .emp-signin a { color: var(--accent); }
-.emp-form { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--border); }
-.emp-foot { margin: 40px 0 0; padding: 20px 0 0; border-top: 1px solid var(--border); font-size: 14px; color: var(--subtle); text-align: center; }
-@media (max-width: 720px) {
-  .emp-band { padding: 36px 16px 40px; }
-  .emp-band h1 { font-size: 24px; }
-  .emp-price-card { padding: 22px 18px; }
+
+.emp { color: var(--text); max-width: 880px; margin: 0 auto; padding: 36px 20px 64px; }
+.emp-top h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 6px; }
+.emp-top p { font-size: 16px; color: var(--muted); margin: 0; line-height: 1.5; }
+.emp-grid { display: grid; grid-template-columns: 340px 1fr; gap: 40px; margin-top: 32px; align-items: start; }
+.emp-card { border: 1px solid var(--border); border-radius: 8px; padding: 24px; background: #fff; }
+.emp-card-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--subtle); }
+.emp-price { font-size: 48px; font-weight: 700; line-height: 1; margin: 8px 0 2px; }
+.emp-period { font-size: 15px; color: var(--muted); }
+.emp-divider { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
+.emp-included { list-style: none; margin: 0; padding: 0; font-size: 15px; }
+.emp-included li { padding: 6px 0 6px 24px; position: relative; line-height: 1.4; }
+.emp-included li::before { content: '✓'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+.emp-cta { display: block; text-align: center; background: var(--accent); color: #fff; font-weight: 600; font-size: 16px; padding: 12px 16px; border-radius: 6px; text-decoration: none; margin-top: 18px; }
+.emp-signin { font-size: 14px; color: var(--subtle); margin: 10px 0 0; text-align: center; }
+.emp-signin a, .emp-section a, .emp-foot a { color: var(--accent); }
+.emp-steps h2, .emp-section h2, .emp-form h2 { font-size: 18px; font-weight: 700; margin: 0 0 16px; }
+.emp-steps ol { list-style: none; margin: 0; padding: 0; }
+.emp-steps li { display: grid; grid-template-columns: 32px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--border); }
+.emp-steps li:first-child { border-top: 0; padding-top: 0; }
+.emp-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.emp-steps strong { display: block; font-size: 15px; margin-bottom: 2px; }
+.emp-steps span { font-size: 15px; color: var(--muted); line-height: 1.45; }
+.emp-section { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.emp-section dt { font-weight: 600; font-size: 15px; margin-top: 16px; }
+.emp-section dd { font-size: 15px; color: var(--muted); margin: 4px 0 0; line-height: 1.5; }
+.emp-form { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.emp-foot { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 14px; color: var(--subtle); }
+@media (max-width: 760px) {
+  .emp { padding: 24px 16px 48px; }
+  .emp-top h1 { font-size: 24px; }
+  .emp-grid { grid-template-columns: 1fr; gap: 24px; }
   .emp-price { font-size: 42px; }
-  .emp-steps { grid-template-columns: 1fr; gap: 12px; }
 }

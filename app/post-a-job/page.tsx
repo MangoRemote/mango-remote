@@ -16,20 +16,22 @@ export default async function PostAJobPage() {
 
   return (
     <main className="emp">
-      <header className="emp-band">
-        <h1>Post a remote job</h1>
-        <p>Reach remote professionals looking for roles they can do from Asia and around the world.</p>
-      </header>
+      <div className="emp-top">
+        <h1>Post a job</h1>
+        <p>Reach remote professionals living in Asia and around the world.</p>
+      </div>
 
-      <div className="emp-wrap">
-        <section className="emp-price-card">
+      <div className="emp-grid">
+        <section className="emp-card">
+          <div className="emp-card-label">Job listing</div>
           <div className="emp-price">$99</div>
-          <div className="emp-period">One-time payment for a listing live 30 days</div>
+          <div className="emp-period">One-time payment · live for 30 days</div>
+          <hr className="emp-divider" />
           <ul className="emp-included">
             <li>Listed on MangoRemote for 30 days</li>
             <li>Visible to MangoRemote job seekers</li>
-            <li>Candidates apply through your own application link</li>
-            <li>Reviewed before it is published</li>
+            <li>Candidates apply through your own link</li>
+            <li>Reviewed before it goes live</li>
           </ul>
           {user ? (
             <a href="#post-form" className="emp-cta">Post your job — $99</a>
@@ -39,45 +41,45 @@ export default async function PostAJobPage() {
           {!user && <p className="emp-signin">New here? <Link href="/auth/signup?next=/post-a-job">Create an account</Link></p>}
         </section>
 
-        <section className="emp-section">
+        <section className="emp-steps">
           <h2>How it works</h2>
-          <ol className="emp-steps">
-            <li><strong>1. Submit your job</strong>Enter the details and your application link.</li>
-            <li><strong>2. Pay securely</strong>Payment is taken by Stripe. We never see your card details.</li>
-            <li><strong>3. We review it</strong>Every listing is checked before it goes live.</li>
-            <li><strong>4. It is published</strong>Your job is live on MangoRemote for 30 days.</li>
+          <ol>
+            <li><span className="emp-num">1</span><div><strong>Submit your job</strong><span>Enter the details and the link candidates should apply through.</span></div></li>
+            <li><span className="emp-num">2</span><div><strong>Pay securely</strong><span>Payment is taken by Stripe. We never see your card details.</span></div></li>
+            <li><span className="emp-num">3</span><div><strong>We review it</strong><span>Every listing is checked before it goes live.</span></div></li>
+            <li><span className="emp-num">4</span><div><strong>It goes live</strong><span>Your job is published on MangoRemote for 30 days.</span></div></li>
           </ol>
         </section>
-
-        <section className="emp-section">
-          <h2>Questions</h2>
-          <dl>
-            <dt>How long is my listing live?</dt>
-            <dd>For 30 days from the day it is published.</dd>
-            <dt>How do candidates apply?</dt>
-            <dd>They use the application link you provide. Applications go to you, not through MangoRemote.</dd>
-            <dt>What happens after I pay?</dt>
-            <dd>You see a confirmation that your listing is in review. We check it, then publish it.</dd>
-            <dt>Can I edit my listing?</dt>
-            <dd>Yes. Email <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a> with the changes.</dd>
-            <dt>What if my listing isn&apos;t approved?</dt>
-            <dd>We contact you at the email on your account and explain why.</dd>
-            <dt>Do I get a receipt?</dt>
-            <dd>Your payment receipt comes from Stripe, sent to the email you paid with.</dd>
-          </dl>
-        </section>
-
-        {user ? (
-          <section id="post-form" className="emp-form">
-            <h2>Job details</h2>
-            <PostJobForm />
-          </section>
-        ) : null}
-
-        <footer className="emp-foot">
-          Questions before you pay? Email <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a>.
-        </footer>
       </div>
+
+      <section className="emp-section">
+        <h2>Questions</h2>
+        <dl>
+          <dt>How long is my listing live?</dt>
+          <dd>For 30 days from the day it is published.</dd>
+          <dt>How do candidates apply?</dt>
+          <dd>They use the application link you provide. Applications go to you, not through MangoRemote.</dd>
+          <dt>What happens after I pay?</dt>
+          <dd>You see a confirmation that your listing is in review. We check it, then publish it.</dd>
+          <dt>Can I edit my listing?</dt>
+          <dd>Yes. Email <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a> with the changes.</dd>
+          <dt>What if my listing isn&apos;t approved?</dt>
+          <dd>We contact you at the email on your account and explain why.</dd>
+          <dt>Do I get a receipt?</dt>
+          <dd>Your payment receipt comes from Stripe, sent to the email you paid with.</dd>
+        </dl>
+      </section>
+
+      {user ? (
+        <section id="post-form" className="emp-form">
+          <h2>Job details</h2>
+          <PostJobForm />
+        </section>
+      ) : null}
+
+      <footer className="emp-foot">
+        Questions before you pay? Email <a href="mailto:hello@mangoremote.com">hello@mangoremote.com</a>.
+      </footer>
     </main>
   )
 }
