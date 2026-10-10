@@ -92,41 +92,60 @@ export async function POST(request: Request) {
       ? Array.from({ length: chunkCount }, (_, i) => session.metadata?.[`job_data_${i}`] || '').join('')
       : session.metadata?.job_data
     if (session.mode === 'payment' && userId && jobData) {
+      const paymentId = session.payment_intent as string
       const data = JSON.parse(jobData)
-      const { data: company } = await getSupabase()
-        .from('companies')
-        .insert({ name: data.company_name, slug: slugify(data.company_name), logo_url: data.logo_url || null, verified: false })
-        .select()
-        .single()
 
-      if (company) {
-        const { data: cat } = await getSupabase().from('categories').select('id').ilike('name', data.category).single()
-        const { data: job } = await getSupabase().from('jobs').insert({
-          title: data.title,
-          slug: slugify(data.title),
-          company_id: company.id,
-          description: data.description,
-          salary_min: data.salary_min ? Number(data.salary_min) : null,
-          salary_max: data.salary_max ? Number(data.salary_max) : null,
-          salary_currency: data.salary_currency,
-          apply_url: data.apply_url,
-          category_id: cat?.id,
-          employment_type: data.employment_type,
-          region_tags: [data.location],
-          status: 'pending',
-          source: 'employer',
-        }).select().single()
+      const { data: existingPosting, error: postingErr } = await getSupabase()
+        .from('employer_postings').select('id, job_id').eq('stripe_payment_id', paymentId).maybeSingle()
+      if (postingErr) return NextResponse.json({ error: postingErr.message }, { status: 500 })
+      if (existingPosting?.job_id) return NextResponse.json({ received: true })
 
-        if (job) {
-          await getSupabase().from('employer_postings').insert({
-            user_id: userId,
-            job_id: job.id,
-            payment_status: 'paid',
-            stripe_payment_id: session.payment_intent as string,
-          })
+      let postingId = existingPosting?.id as string | undefined
+      if (!postingId) {
+        const { data: posting, error: insertPostingErr } = await getSupabase().from('employer_postings').insert({
+          user_id: userId, payment_status: 'paid', stripe_payment_id: paymentId,
+        }).select('id').single()
+        if (insertPostingErr || !posting) return NextResponse.json({ error: insertPostingErr?.message || 'posting insert failed' }, { status: 500 })
+        postingId = posting.id
+      }
 
-          // Send notification email
-          try {
+      const companySlug = slugify(data.company_name)
+      let companyId: string | undefined
+      const { data: existingCompany } = await getSupabase().from('companies').select('id').eq('slug', companySlug).maybeSingle()
+      if (existingCompany) {
+        companyId = existingCompany.id
+      } else {
+        const { data: newCompany, error: companyErr } = await getSupabase().from('companies')
+          .insert({ name: data.company_name, slug: companySlug, logo_url: data.logo_url || null, verified: false })
+          .select('id').single()
+        if (companyErr || !newCompany) return NextResponse.json({ error: companyErr?.message || 'company insert failed' }, { status: 500 })
+        companyId = newCompany.id
+      }
+
+      const { data: cat } = await getSupabase().from('categories').select('id').ilike('name', data.category).maybeSingle()
+      const slugSuffix = paymentId.slice(-6).toLowerCase()
+      const { data: job, error: jobErr } = await getSupabase().from('jobs').insert({
+        title: data.title,
+        slug: `${slugify(data.title)}-${slugSuffix}`,
+        company_id: companyId,
+        description: data.description,
+        salary_min: data.salary_min ? Number(data.salary_min) : null,
+        salary_max: data.salary_max ? Number(data.salary_max) : null,
+        salary_currency: data.salary_currency,
+        apply_url: data.apply_url,
+        category_id: cat?.id,
+        employment_type: data.employment_type,
+        region_tags: [data.location],
+        status: 'pending',
+        source: 'employer',
+      }).select('id').single()
+      if (jobErr || !job) return NextResponse.json({ error: jobErr?.message || 'job insert failed' }, { status: 500 })
+
+      const { error: linkErr } = await getSupabase().from('employer_postings').update({ job_id: job.id }).eq('id', postingId)
+      if (linkErr) console.error('Could not link posting to job', postingId, job.id, linkErr.message)
+
+      // Send notification email
+      try {
             await getResend().emails.send({
               from: 'MangoRemote <noreply@mangoremote.com>',
               to: 'hello@mangoremote.com',
@@ -145,11 +164,9 @@ export async function POST(request: Request) {
                 <p>${data.description.replace(/\n/g, '<br />')}</p>
               `,
             })
-          } catch (err) {
-            console.error('Failed to send job posting notification:', err)
-          }
+        } catch (err) {
+          console.error('Failed to send job posting notification:', err)
         }
-      }
     }
   }
 
