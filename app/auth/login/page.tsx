@@ -29,7 +29,7 @@ function LoginForm() {
 
     if (mode === 'reset') {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/set-password`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/set-password`,
       })
       if (error) { setError(error.message); setLoading(false); return }
       setResetSent(true)
@@ -41,7 +41,7 @@ function LoginForm() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}${next}` },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
       })
       if (error) {
         console.error('Signup error:', error)

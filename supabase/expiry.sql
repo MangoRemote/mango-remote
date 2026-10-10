@@ -1,7 +1,7 @@
 -- Removes jobs 35 days after publishing, every night at 03:00 UTC, inside the database.
 -- Run once in the Supabase SQL editor (after enabling the pg_cron extension in Database → Extensions if the first line errors).
 
-create extension if not exists pg_cron with schema extensions;
+create extension if not exists pg_cron;
 
 do $$ begin
   perform cron.unschedule('expire-jobs');

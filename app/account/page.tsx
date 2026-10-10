@@ -24,7 +24,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       supabase.from('saved_jobs').select('job_id, jobs(*, company:companies(*), category:categories(*))').eq('user_id', authUser.id).order('created_at', { ascending: false }),
     ])
     sub = subData
-    savedJobs = ((savedData || []).map((r: { jobs: unknown }) => r.jobs).filter(Boolean)) as Job[]
+    const cutoff = Date.now() - 35 * 24 * 60 * 60 * 1000
+    savedJobs = ((savedData || []).map((r: { jobs: unknown }) => r.jobs).filter(Boolean) as Job[])
+      .filter(j => new Date(j.published_at || 0).getTime() >= cutoff)
 
   const isPremium = sub?.plan === 'premium' && sub?.status === 'active'
   const params = await searchParams
