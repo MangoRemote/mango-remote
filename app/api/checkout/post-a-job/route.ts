@@ -13,6 +13,14 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
+  const required = ['company_name', 'title', 'description', 'apply_url', 'category', 'employment_type', 'location']
+  const missing = required.filter(k => !body?.[k] || String(body[k]).trim() === '')
+  if (missing.length) {
+    return NextResponse.json({ error: `Please fill in: ${missing.join(', ')}` }, { status: 400 })
+  }
+  if (!/^https?:\/\//.test(String(body.apply_url))) {
+    return NextResponse.json({ error: 'The application link must start with http:// or https://' }, { status: 400 })
+  }
   const payload = JSON.stringify(body)
   const chunks = payload.match(/[\s\S]{1,400}/g) || []
   if (chunks.length > 10) {
