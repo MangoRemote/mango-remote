@@ -112,10 +112,11 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
         const changed = existingRow.title !== c.title || existingRow.description !== c.description
         summary.updated += changed ? 1 : 0
         if (!opts.dryRun) {
-          await supabase.from('jobs').update({
+          const { error: updErr } = await supabase.from('jobs').update({
             last_seen_at: new Date().toISOString(),
             ...(changed ? { title: c.title, description: c.description } : {}),
           }).eq('id', existingRow.id)
+          if (updErr) summary.errors.push(`update ${c.external_id}: ${updErr.message}`)
         }
         continue
       }
@@ -129,13 +130,14 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
       if (!opts.dryRun) {
         const companyId = companyByName.get(b.company.toLowerCase())
         if (!companyId) { summary.errors.push(`no company row for ${b.company}`); continue }
-        await supabase.from('jobs').insert({
+        const { error: insErr } = await supabase.from('jobs').insert({
           company_id: companyId, title: c.title, slug: `${slugify(c.title)}-${slugify(b.company)}-${c.external_id.slice(-6)}`,
           description: c.description || c.title, apply_url: c.apply_url, employment_type: c.employment_type,
           region_tags: eligibility === 'likely' ? [c.location_text] : [],
           status: 'pending', source: 'ats_sync', external_source: source, external_id: c.external_id,
           last_seen_at: new Date().toISOString(), asia_friendly: eligibility === 'likely',
         })
+        if (insErr) summary.errors.push(`insert ${c.external_id}: ${insErr.message}`)
       }
     }
     // Hide jobs that have gone from the ATS board: only after two consecutive days missing, to avoid hiding on a bad fetch.
@@ -145,7 +147,10 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
       if (seenIds.has(r.external_id) || r.status !== 'live') continue
       if (r.last_seen_at && new Date(r.last_seen_at).getTime() > twoDaysAgo) continue
       summary.hidden_removed++
-      if (!opts.dryRun) await supabase.from('jobs').update({ status: 'draft', link_status: 'removed_from_ats' }).eq('id', r.id)
+      if (!opts.dryRun) {
+        const { error: hideErr } = await supabase.from('jobs').update({ status: 'draft', link_status: 'removed_from_ats' }).eq('id', r.id)
+        if (hideErr) summary.errors.push(`hide ${r.id}: ${hideErr.message}`)
+      }
     }
   }
   log(JSON.stringify(summary))
