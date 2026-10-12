@@ -140,7 +140,7 @@ export default async function PremiumPage() {
             <div className="premium-benefit">
               <div className="premium-benefit-num">03</div>
               <strong>Cancel anytime</strong>
-              <p>No contracts. Cancel any time by emailing hello@mangoremote.com.</p>
+              <p>No contracts. Cancel any time from your account page. Your access continues until the end of the period you have paid for.</p>
             </div>
           </div>
         </div>
