@@ -111,18 +111,19 @@ export function normalizeUrl(raw: string): string {
 
 export const AUTO_APPROVE_HIGH = false
 
-const SPAM_PATTERNS = /crypto|bitcoin|earn \$|make \$\d+ (a|per) (day|hour)|guaranteed income|work from home earn|mlm|pyramid|telegram only|whatsapp only/i
+const SPAM_PATTERNS = /earn \$\d|make \$\d+ (a|per) (day|hour)|guaranteed (income|earnings)|work from home and earn|\bmlm\b|pyramid scheme|(contact|reply|message) (us )?(only )?(on|via) (telegram|whatsapp)/i
 
-export function qualityScore(c: Candidate, eligibility: string, companyKnown: boolean, linkOk: boolean): { score: number; tier: 'high' | 'medium' | 'low'; reasons: string[] } {
+export function qualityScore(c: Candidate, eligibility: string, companyKnown: boolean, linkOk: boolean, typeStated = true): { score: number; tier: 'high' | 'medium' | 'low'; reasons: string[] } {
   let score = 0
   const reasons: string[] = []
-  if (eligibility === 'likely') { score += 30 } else { reasons.push('location not clearly Asia') }
-  if (linkOk) { score += 15 } else { reasons.push('application link not confirmed') }
-  if (companyKnown) { score += 10 } else { reasons.push('company not on approved list') }
-  if ((c.description || '').length >= 400) { score += 15 } else { reasons.push('short description') }
-  if (c.employment_type && c.employment_type !== 'Full-time') { score += 5 } else { score += 5 }
-  if (c.title && c.title.length >= 5) { score += 5 }
-  if (SPAM_PATTERNS.test(`${c.title} ${c.description}`)) { score -= 40; reasons.push('possible spam or scam wording') } else { score += 20 }
+  if (eligibility === 'likely') score += 30; else reasons.push('location not clearly Asia')
+  if (linkOk) score += 15; else reasons.push('application link not confirmed')
+  if (companyKnown) score += 10; else reasons.push('company not on approved list')
+  const len = (c.description || '').length
+  if (len >= 1500) score += 20; else if (len >= 400) score += 12; else reasons.push('short description')
+  if (typeStated) score += 5; else reasons.push('employment type not stated')
+  if (c.title && c.title.trim().length >= 5 && c.title !== c.title.toUpperCase()) score += 5
+  if (SPAM_PATTERNS.test(`${c.title} ${c.description}`)) { score -= 40; reasons.push('possible spam or scam wording') }
   score = Math.max(0, Math.min(100, score))
   const tier = score >= 80 ? 'high' : score >= 55 ? 'medium' : 'low'
   return { score, tier, reasons }
