@@ -144,6 +144,23 @@ export async function POST(request: Request) {
       const { error: linkErr } = await getSupabase().from('employer_postings').update({ job_id: job.id }).eq('id', postingId)
       if (linkErr) console.error('Could not link posting to job', postingId, job.id, linkErr.message)
 
+      // Confirmation to the employer. Failure is logged but never blocks the job record.
+      const employerEmail = session.customer_details?.email
+      if (employerEmail && process.env.RESEND_API_KEY) {
+        try {
+          await getResend().emails.send({
+            from: 'MangoRemote <noreply@mangoremote.com>',
+            to: employerEmail,
+            subject: 'We have received your job listing',
+            text: `Thanks for posting on MangoRemote. We've received "${data.title}" and will review it before it is published.\n\nYour listing stays live for 30 days once approved.\n\nQuestions? Reply to this email or contact hello@mangoremote.com.`,
+          })
+        } catch (err) {
+          console.error('Employer confirmation email failed', err)
+        }
+      } else if (employerEmail) {
+        console.error('Employer confirmation email not sent: RESEND_API_KEY is not set')
+      }
+
       // Send notification email
       try {
             await getResend().emails.send({
