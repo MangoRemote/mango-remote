@@ -108,10 +108,39 @@ export function normalizeUrl(raw: string): string {
   }
 }
 
+
+export const AUTO_APPROVE_HIGH = false
+
+const SPAM_PATTERNS = /crypto|bitcoin|earn \$|make \$\d+ (a|per) (day|hour)|guaranteed income|work from home earn|mlm|pyramid|telegram only|whatsapp only/i
+
+export function qualityScore(c: Candidate, eligibility: string, companyKnown: boolean, linkOk: boolean): { score: number; tier: 'high' | 'medium' | 'low'; reasons: string[] } {
+  let score = 0
+  const reasons: string[] = []
+  if (eligibility === 'likely') { score += 30 } else { reasons.push('location not clearly Asia') }
+  if (linkOk) { score += 15 } else { reasons.push('application link not confirmed') }
+  if (companyKnown) { score += 10 } else { reasons.push('company not on approved list') }
+  if ((c.description || '').length >= 400) { score += 15 } else { reasons.push('short description') }
+  if (c.employment_type && c.employment_type !== 'Full-time') { score += 5 } else { score += 5 }
+  if (c.title && c.title.length >= 5) { score += 5 }
+  if (SPAM_PATTERNS.test(`${c.title} ${c.description}`)) { score -= 40; reasons.push('possible spam or scam wording') } else { score += 20 }
+  score = Math.max(0, Math.min(100, score))
+  const tier = score >= 80 ? 'high' : score >= 55 ? 'medium' : 'low'
+  return { score, tier, reasons }
+}
+
+export async function checkLink(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: { 'User-Agent': 'MangoRemote-link-check/1.0' } })
+    return res.status >= 200 && res.status < 400
+  } catch {
+    return false
+  }
+}
+
 export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient; log?: (m: string) => void }) {
   const log = opts.log || console.log
   const supabase = opts.supabase || createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.SUPABASE_SERVICE_ROLE_KEY || '')
-  const summary = { boards: 0, fetched: 0, new_pending: 0, updated: 0, skipped_duplicate: 0, skipped_not_asia: 0, hidden_removed: 0, errors: [] as string[] }
+  const summary: { boards: number; fetched: number; new_pending: number; updated: number; skipped_duplicate: number; skipped_not_asia: number; hidden_removed: number; rejected_low_quality?: number; errors: string[] } = { boards: 0, fetched: 0, new_pending: 0, updated: 0, skipped_duplicate: 0, skipped_not_asia: 0, hidden_removed: 0, errors: [] }
 
   const { data: existing } = await supabase.from('jobs').select('id, title, apply_url, external_source, external_id, company_id, status, last_seen_at, description, region_tags')
   const rows = existing || []
@@ -155,6 +184,10 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
       const companyKey = `${b.company.toLowerCase()}|${c.title.trim().toLowerCase()}`
       if (byCompanyTitle.has(companyKey)) { summary.skipped_duplicate++; continue }
       byCompanyTitle.add(companyKey)
+      const companyKnown = BOARDS.some(x => x.company === b.company)
+      const linkOk = await checkLink(c.apply_url)
+      const q = qualityScore(c, eligibility, companyKnown, linkOk)
+      if (q.tier === 'low') { summary.rejected_low_quality = (summary.rejected_low_quality || 0) + 1; if (!opts.dryRun) { await supabase.from('jobs').insert({ company_id: companyByName.get(b.company.toLowerCase()), title: c.title, slug: `${slugify(c.title)}-${slugify(b.company)}-${c.external_id.slice(-6)}`, description: c.description || c.title, apply_url: c.apply_url, employment_type: c.employment_type, region_tags: [], status: 'draft', source: 'ats_sync', external_source: `${b.provider}:${b.token}`, external_id: c.external_id, last_seen_at: new Date().toISOString(), link_status: 'rejected_low_quality:' + q.reasons.join('; ') }) } continue }
       summary.new_pending++
       const makePremium = premiumCount / Math.max(liveCount, 1) < 0.5
       liveCount++
@@ -166,10 +199,13 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
           company_id: companyId, title: c.title, slug: `${slugify(c.title)}-${slugify(b.company)}-${c.external_id.slice(-6)}`,
           description: c.description || c.title, apply_url: c.apply_url, employment_type: c.employment_type,
           region_tags: eligibility === 'likely' ? [c.location_text] : [],
-          status: 'pending', source: 'ats_sync', external_source: source, external_id: c.external_id,
+          source: 'ats_sync', external_source: source, external_id: c.external_id,
           last_seen_at: new Date().toISOString(), asia_friendly: eligibility === 'likely',
           category_id: categoryBySlug.get(inferCategorySlug(c.title) || '') ?? null,
           is_premium: makePremium,
+          link_status: linkOk ? 'ok' : 'unverified',
+          status: (q.tier === 'high' && AUTO_APPROVE_HIGH) ? 'live' : 'pending',
+          published_at: (q.tier === 'high' && AUTO_APPROVE_HIGH) ? new Date().toISOString() : null,
         })
         if (insErr) summary.errors.push(`insert ${c.external_id}: ${insErr.message}`)
       }
