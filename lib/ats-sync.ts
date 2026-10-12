@@ -1,5 +1,30 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
+const CATEGORY_RULES: [RegExp, string][] = [
+  [/customer success/i, 'customer-success'],
+  [/sales|account executive|account manager|business development|\bbdm\b|\bsdr\b|pre-?sales|solutions? (engineer|consultant)|partner(ship)? manager/i, 'sales'],
+  [/recruit|talent|\bhr\b|people operations/i, 'hr-recruiting'],
+  [/paralegal|legal|counsel|lawyer|litigation/i, 'legal'],
+  [/data (engineer|analyst|scientist)|machine learning|\bml\b/i, 'data'],
+  [/product (manager|owner|lead)/i, 'product'],
+  [/technical writer|writer|documentation|editor/i, 'technical-writing'],
+  [/technical support|support|technician|help ?desk|service desk|onboarding/i, 'support'],
+  [/marketing|brand|community|social|growth|content|storyteller/i, 'marketing'],
+  [/designer|design\b|\bux\b|\bui\b/i, 'design'],
+  [/operations|\bops\b/i, 'operations'],
+  [/financ|accountant|bookkeep/i, 'finance'],
+  [/project manager|program manager|scrum/i, 'project-management'],
+  [/engineer|developer|devops|\bsre\b|architect|\bqa\b|tester/i, 'engineering'],
+  [/manager|director|head of|\bvp\b|chief/i, 'management'],
+]
+
+export function inferCategorySlug(title: string): string | null {
+  for (const [pattern, slug] of CATEGORY_RULES) {
+    if (pattern.test(title)) return slug
+  }
+  return null
+}
+
 export type Board = { company: string; provider: 'greenhouse' | 'lever' | 'ashby'; token: string }
 
 export const BOARDS: Board[] = [
@@ -94,6 +119,8 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
   const byUrl = new Set(rows.map(r => normalizeUrl(r.apply_url || '')))
   const byCompanyTitle = new Set<string>()
 
+  const { data: categories } = await supabase.from('categories').select('id, slug')
+  const categoryBySlug = new Map((categories || []).map(c => [c.slug, c.id]))
   const { data: companies } = await supabase.from('companies').select('id, slug, name')
   const companyByName = new Map((companies || []).map(c => [c.name.toLowerCase(), c.id]))
 
@@ -136,6 +163,7 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
           region_tags: eligibility === 'likely' ? [c.location_text] : [],
           status: 'pending', source: 'ats_sync', external_source: source, external_id: c.external_id,
           last_seen_at: new Date().toISOString(), asia_friendly: eligibility === 'likely',
+          category_id: categoryBySlug.get(inferCategorySlug(c.title) || '') ?? null,
         })
         if (insErr) summary.errors.push(`insert ${c.external_id}: ${insErr.message}`)
       }
