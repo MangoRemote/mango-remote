@@ -115,6 +115,8 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
 
   const { data: existing } = await supabase.from('jobs').select('id, title, apply_url, external_source, external_id, company_id, status, last_seen_at, description, region_tags')
   const rows = existing || []
+  let premiumCount = rows.filter(r => (r as { is_premium?: boolean }).is_premium).length
+  let liveCount = rows.filter(r => r.status === 'live').length
   const byExternal = new Map(rows.filter(r => r.external_source && r.external_id).map(r => [`${r.external_source}|${r.external_id}`, r]))
   const byUrl = new Set(rows.map(r => normalizeUrl(r.apply_url || '')))
   const byCompanyTitle = new Set<string>()
@@ -154,6 +156,9 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
       if (byCompanyTitle.has(companyKey)) { summary.skipped_duplicate++; continue }
       byCompanyTitle.add(companyKey)
       summary.new_pending++
+      const makePremium = premiumCount / Math.max(liveCount, 1) < 0.5
+      liveCount++
+      if (makePremium) premiumCount++
       if (!opts.dryRun) {
         const companyId = companyByName.get(b.company.toLowerCase())
         if (!companyId) { summary.errors.push(`no company row for ${b.company}`); continue }
@@ -164,6 +169,7 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
           status: 'pending', source: 'ats_sync', external_source: source, external_id: c.external_id,
           last_seen_at: new Date().toISOString(), asia_friendly: eligibility === 'likely',
           category_id: categoryBySlug.get(inferCategorySlug(c.title) || '') ?? null,
+          is_premium: makePremium,
         })
         if (insErr) summary.errors.push(`insert ${c.external_id}: ${insErr.message}`)
       }
