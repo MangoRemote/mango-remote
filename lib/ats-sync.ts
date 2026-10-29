@@ -143,7 +143,8 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
   const supabase = opts.supabase || createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.SUPABASE_SERVICE_ROLE_KEY || '')
   const summary: { boards: number; fetched: number; new_pending: number; updated: number; skipped_duplicate: number; skipped_not_asia: number; hidden_removed: number; rejected_low_quality?: number; errors: string[] } = { boards: 0, fetched: 0, new_pending: 0, updated: 0, skipped_duplicate: 0, skipped_not_asia: 0, hidden_removed: 0, errors: [] }
 
-  const { data: existing } = await supabase.from('jobs').select('id, title, apply_url, external_source, external_id, company_id, status, last_seen_at, description, region_tags')
+  const { data: existing, error: existingErr } = await supabase.from('jobs').select('id, title, apply_url, external_source, external_id, company_id, status, last_seen_at, description, region_tags')
+  if (existingErr) throw new Error(`ATS sync cannot read jobs: ${existingErr.message}`)
   const rows = existing || []
   let premiumCount = rows.filter(r => (r as { is_premium?: boolean }).is_premium).length
   let liveCount = rows.filter(r => r.status === 'live').length
@@ -151,7 +152,8 @@ export async function runSync(opts: { dryRun: boolean; supabase?: SupabaseClient
   const byUrl = new Set(rows.map(r => normalizeUrl(r.apply_url || '')))
   const byCompanyTitle = new Set<string>()
 
-  const { data: categories } = await supabase.from('categories').select('id, slug')
+  const { data: categories, error: catErr } = await supabase.from('categories').select('id, slug')
+  if (catErr) throw new Error(`ATS sync cannot read categories: ${catErr.message}`)
   const categoryBySlug = new Map((categories || []).map(c => [c.slug, c.id]))
   const { data: companies } = await supabase.from('companies').select('id, slug, name')
   const companyByName = new Map((companies || []).map(c => [c.name.toLowerCase(), c.id]))
