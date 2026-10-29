@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Script from 'next/script'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { loadPremiumTeaser } from '@/lib/premium-teasers'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -40,9 +41,17 @@ async function loadJob(slug: string) {
   return job
 }
 
+// Non-subscribers can't read Premium rows, so fall back to the public teaser (no description or apply link).
+async function loadJobOrTeaser(slug: string) {
+  const job = await loadJob(slug)
+  if (job) return job
+  const supabase = await createClient()
+  return loadPremiumTeaser(supabase, slug)
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const job = await loadJob(slug)
+  const job = await loadJobOrTeaser(slug)
 
   if (!job) {
     return { title: 'Job not found' }
@@ -66,7 +75,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function JobDetailPage({ params }: Props) {
   const { slug } = await params
-  const job = await loadJob(slug)
+  const job = await loadJobOrTeaser(slug)
 
   if (!job) notFound()
 

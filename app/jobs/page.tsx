@@ -5,6 +5,7 @@ import JobFilters from '@/components/JobFilters'
 import type { Job, Category } from '@/lib/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { loadPremiumTeasers, filterTeasers } from '@/lib/premium-teasers'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,6 +59,7 @@ export default async function JobsPage({ searchParams }: Props) {
     .from('jobs')
     .select('id, title, slug, employment_type, region_tags, asia_friendly, published_at, created_at, expires_at, is_premium, is_featured, salary_min, salary_max, salary_currency, company:companies(id, name, slug, logo_url), category:categories(id, name, slug)')
     .eq('status', 'live')
+    .eq('is_premium', false)
     .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
 
   // Sort
@@ -113,13 +115,13 @@ export default async function JobsPage({ searchParams }: Props) {
   const savedIds = new Set((savedData || []).map((r: { job_id: string }) => r.job_id))
   const allJobs = (jobs || []) as unknown as Job[]
   const freeJobs = allJobs.filter(j => !j.is_premium)
-  const premiumJobs = allJobs.filter(j => j.is_premium)
 
   const FREE_JOB_LIMIT = 50
   const visibleFreeJobs = isPremium ? freeJobs : freeJobs.slice(0, FREE_JOB_LIMIT)
   const lockedFreeJobs = isPremium ? [] : freeJobs.slice(FREE_JOB_LIMIT)
 
   const hasFilters = !!(params.q || params.category || params.type || params.asia || params.country || params.level || params.posted)
+  const premiumJobs = filterTeasers(await loadPremiumTeasers(supabase), params)
 
   const activeFilterCount = [params.q, params.category, params.type, params.asia || params.country, params.level, params.posted].filter(Boolean).length
 
@@ -129,7 +131,7 @@ export default async function JobsPage({ searchParams }: Props) {
         <div className="jobs-page-header-top">
           <h1 className="jobs-page-title">
             Remote Jobs
-            <span className="jobs-page-count">{allJobs.length} {allJobs.length === 1 ? 'job' : 'jobs'}</span>
+            <span className="jobs-page-count">{allJobs.length + premiumJobs.length} {allJobs.length + premiumJobs.length === 1 ? 'job' : 'jobs'}</span>
           </h1>
           <div className="jobs-page-sort">
             <SortSelect current={params.sort} currentParams={params} />
@@ -185,7 +187,7 @@ export default async function JobsPage({ searchParams }: Props) {
           </>
         )}
 
-        {allJobs.length === 0 && (
+        {allJobs.length === 0 && premiumJobs.length === 0 && (
           <div className="jobs-empty">
             <div className="jobs-empty-icon">🔍</div>
             <h3>No jobs found</h3>

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { loadPremiumTeasers } from '@/lib/premium-teasers'
 
 export const metadata: Metadata = {
   title: 'Premium — MangoRemote',
@@ -21,11 +22,14 @@ export default async function PremiumPage() {
     isPremium = sub?.plan === 'premium' && sub?.status === 'active'
   }
 
-  const { count: jobCount } = await supabase
+  const { count: freeCount } = await supabase
     .from('jobs')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'live')
+    .eq('is_premium', false)
     .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
+  const premiumTeasers = await loadPremiumTeasers(supabase)
+  const jobCount = (freeCount || 0) + premiumTeasers.length
   const jobStat = jobCount ? `${jobCount}+` : '30+'
 
   return (

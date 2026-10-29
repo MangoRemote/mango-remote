@@ -6,6 +6,7 @@ import HeroFilters from '@/components/HeroFilters'
 import Link from 'next/link'
 import type { Job } from '@/lib/types'
 import type { Metadata } from 'next'
+import { loadPremiumTeasers } from '@/lib/premium-teasers'
 
 export const metadata: Metadata = {
   title: 'MangoRemote — Remote Jobs For Living in Asia',
@@ -46,14 +47,15 @@ export default async function HomePage() {
     .from('jobs')
     .select('id, title, slug, employment_type, region_tags, asia_friendly, published_at, created_at, expires_at, is_premium, is_featured, salary_min, salary_max, salary_currency, company:companies(id,name,slug,logo_url), category:categories(id,name)', { count: 'exact' })
     .eq('status', 'live')
+    .eq('is_premium', false)
     .gte('published_at', new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString())
     .order('is_featured', { ascending: false })
     .order('published_at', { ascending: false })
 
   const allJobs = (jobs || []) as unknown as Job[]
   const freeJobs = allJobs.filter(j => !j.is_premium)
-  const premiumJobs = allJobs.filter(j => j.is_premium)
-  const total = count || allJobs.length
+  const premiumJobs = await loadPremiumTeasers(supabase)
+  const total = (count || allJobs.length) + premiumJobs.length
 
   return (
     <>
